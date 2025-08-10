@@ -5,7 +5,7 @@
 <!-- project overview -->
 <img src="./readme/title2.svg"/>
 
-> ConvoVerse is a smart, unified communication dashboard that brings messages from Slack, WhatsApp, email, and calendar into one place. Powered by AI, it summarizes long threads, extracts action items, automates replies and scheduling, and makes cross-platform search effortless, helping you stay organized, responsive, and focused without switching between apps.
+> **ConvoVerse** is a smart, AI-powered dashboard that unifies Slack, WhatsApp, email, and calendar in one place. It delivers instant summaries, extracts action items, automates replies and scheduling, and enables fast cross-platform search, keeping you organized, responsive, and in control.
 
 <br><br>
 
