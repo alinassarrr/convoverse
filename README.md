@@ -1,4 +1,4 @@
-<img src="./readme/title1.vg"/>
+<img src="./readme/title1.svg"/>
 
 <br><br>
 
