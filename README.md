@@ -12,9 +12,27 @@
 <!-- System Design -->
 <img src="./readme/title3.svg"/>
 
-### Add Title Here
+### Project Structure
 
-- To be decided on later on.
+```
+convoverse/
+├── server/          # NestJS Backend API
+│   ├── src/
+│   │   ├── users/   # User management module
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── package.json
+│   └── README.md
+├── readme/          # Documentation assets
+└── README.md        # Main documentation
+```
+
+### Technology Stack
+
+- **Backend**: NestJS with TypeScript
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT with Passport
+- **Validation**: Class-validator
 
 <br><br>
 
