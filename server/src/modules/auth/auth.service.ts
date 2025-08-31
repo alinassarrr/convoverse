@@ -6,12 +6,14 @@ import {
 import { SignUpDTO } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../../schemas/users.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDTO } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from 'src/schemas/refresh-token.schema';
 import { v4 as uuidv4 } from 'uuid';
+
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -53,7 +55,9 @@ export class AuthService {
       throw new UnauthorizedException('Wrong credentials');
     }
     // generate JWT Token
-    const tokens = await this.generateUserToken(userFound._id);
+    const tokens = await this.generateUserToken(
+      userFound._id as Types.ObjectId,
+    );
     return {
       ...tokens,
       userId: userFound._id,
@@ -72,19 +76,23 @@ export class AuthService {
     return this.generateUserToken(token.userId);
   }
 
-  async generateUserToken(userId) {
+  async generateUserToken(userId: mongoose.Types.ObjectId) {
     const accessToken = this.jwtService.sign(
-      { userId },
+      { userId: mongoose.Types.ObjectId },
       { expiresIn: '2 days' },
     );
     const refreshToken = uuidv4();
     await this.storeRefreshToken(refreshToken, userId);
     return { accessToken, refreshToken };
   }
-  async storeRefreshToken(token: string, userId) {
+  async storeRefreshToken(token: string, userId: mongoose.Types.ObjectId) {
     // exp will be 3 days from moment created
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 3);
-    await this.RefreshTokenModel.create({ token, userId, expiryDate });
+    await this.RefreshTokenModel.updateOne(
+      { userId }, // search on
+      { $set: { token, expiryDate } }, // set values
+      { upsert: true }, // if not found create new one
+    );
   }
 }
