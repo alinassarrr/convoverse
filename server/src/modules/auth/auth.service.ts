@@ -38,4 +38,25 @@ export class AuthService {
       password: hashPassword,
     });
   }
+
+  async login(credentials: LoginDTO) {
+    // user Exist?
+    const { email, password } = credentials;
+    const userFound = await this.UserModel.findOne({ email });
+    if (!userFound) {
+      throw new UnauthorizedException('Wrong credentials');
+    }
+    // verify password
+    const passwordVerified = await bcrypt.compare(password, userFound.password);
+
+    if (!passwordVerified) {
+      throw new UnauthorizedException('Wrong credentials');
+    }
+    // generate JWT Token
+    const tokens = await this.generateUserToken(userFound._id);
+    return {
+      ...tokens,
+      userId: userFound._id,
+    };
+  }
 }
