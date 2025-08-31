@@ -81,4 +81,10 @@ export class AuthService {
     await this.storeRefreshToken(refreshToken, userId);
     return { accessToken, refreshToken };
   }
+  async storeRefreshToken(token: string, userId) {
+    // exp will be 3 days from moment created
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+    await this.RefreshTokenModel.create({ token, userId, expiryDate });
+  }
 }
