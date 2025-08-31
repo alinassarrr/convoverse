@@ -71,4 +71,14 @@ export class AuthService {
       throw new UnauthorizedException('Session expired need to login again');
     return this.generateUserToken(token.userId);
   }
+
+  async generateUserToken(userId) {
+    const accessToken = this.jwtService.sign(
+      { userId },
+      { expiresIn: '2 days' },
+    );
+    const refreshToken = uuidv4();
+    await this.storeRefreshToken(refreshToken, userId);
+    return { accessToken, refreshToken };
+  }
 }
