@@ -59,4 +59,16 @@ export class AuthService {
       userId: userFound._id,
     };
   }
+
+  async refreshToken(refreshToken: string) {
+    // if refreshtoken exist in DB and not expired
+    // get userId from refresh token to generate new one
+    const token = await this.RefreshTokenModel.findOne({
+      token: refreshToken,
+      expiryDate: { $gte: new Date() }, // greater than
+    });
+    if (!token)
+      throw new UnauthorizedException('Session expired need to login again');
+    return this.generateUserToken(token.userId);
+  }
 }
