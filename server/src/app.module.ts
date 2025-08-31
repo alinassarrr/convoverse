@@ -20,6 +20,15 @@ import { UsersModule } from './modules/users/users.module';
       global: true,
       inject: [ConfigService],
     }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('database.connectionString'),
+      }),
+      inject: [ConfigService],
+    }),
+    AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
