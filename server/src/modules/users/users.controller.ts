@@ -1,27 +1,22 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
   Delete,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import mongoose from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './schemas/users.schema';
+import { User } from '../../schemas/users.schema';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
-  }
 
   @Get()
   findAll() {
@@ -36,7 +31,7 @@ export class UsersController {
     if (!findUser) throw new HttpException('User not found', 404);
     return findUser;
   }
-
+  @UseGuards(AuthGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const isValid = mongoose.Types.ObjectId.isValid(id);
