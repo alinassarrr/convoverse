@@ -13,4 +13,9 @@ export class AuthController {
   async signUp(@Body() credentials: SignUpDTO) {
     return this.authService.signup(credentials);
   }
+  // Todo: Post Login
+  @Post('login')
+  async login(@Body() credentials: LoginDTO) {
+    return this.authService.login(credentials);
+  }
 }
