@@ -4,7 +4,12 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // take away fields that should not be sent in body
+      forbidNonWhitelisted: true, // will through an error
+    }),
+  ); // pipe for validation
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
