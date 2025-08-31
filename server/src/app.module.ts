@@ -12,6 +12,14 @@ import { UsersModule } from './modules/users/users.module';
       isGlobal: true,
       load: [config],
     }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('jwt.secret'),
+      }),
+      global: true,
+      inject: [ConfigService],
+    }),
   ],
 })
 export class AppModule {}
