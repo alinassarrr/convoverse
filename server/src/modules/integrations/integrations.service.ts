@@ -72,5 +72,15 @@ export class IntegrationsService {
         },
       },
     );
+
+    if (!response.data.ok) {
+      throw new Error(
+        'Failed to exchange code for token: ' + response.data.error,
+      );
+    }
+    console.log(response.data);
+
+    const { access_token, refresh_token, team, authed_user, scope } =
+      response.data;
   }
 }
