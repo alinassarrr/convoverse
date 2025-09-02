@@ -1,26 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { CreateIntegrationDto } from './dto/create-integration.dto';
-import { UpdateIntegrationDto } from './dto/update-integration.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import type { Response } from 'express';
+import axios from 'axios';
+import {
+  Integration,
+  IntegrationProvider,
+} from '../../schemas/integration.schema';
+import { SlackTokenResponseDTO } from './dto/slack-token-response.dto';
+import { SlackConfig } from 'src/config/slackConfig';
 
 @Injectable()
 export class IntegrationsService {
-  create(createIntegrationDto: CreateIntegrationDto) {
-    return 'This action adds a new integration';
-  }
-
-  findAll() {
-    return `This action returns all integrations`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} integration`;
-  }
-
-  update(id: number, updateIntegrationDto: UpdateIntegrationDto) {
-    return `This action updates a #${id} integration`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} integration`;
-  }
+  constructor(
+    @InjectModel(Integration.name) private IntegrationModel: Model<Integration>,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly slackConfig: SlackConfig,
+  ) {}
 }
