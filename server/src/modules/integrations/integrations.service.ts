@@ -57,5 +57,20 @@ export class IntegrationsService {
     if (!clientId || !clientSecret || !redirectUri) {
       throw new Error('Slack configuration missing');
     }
+
+    // exchange code for access token
+    const response = await axios.post<SlackTokenResponseDTO>(
+      'https://slack.com/api/oauth.v2.access', // the endpoint to do the exchange
+      null, // place holder for the body we need it null
+      {
+        params: {
+          // obj that will be serialized into the query param
+          code, // that will be exchanged to get the token
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+        },
+      },
+    );
   }
 }
