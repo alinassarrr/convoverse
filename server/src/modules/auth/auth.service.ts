@@ -79,7 +79,7 @@ export class AuthService {
   async generateUserToken(userId: mongoose.Types.ObjectId) {
     const accessToken = this.jwtService.sign(
       { userId },
-      { expiresIn: '2 days' },
+      { expiresIn: '30 days' },
     );
     const refreshToken = uuidv4();
     await this.storeRefreshToken(refreshToken, userId);
