@@ -18,11 +18,17 @@ export class Integration extends Document {
   })
   provider: IntegrationProvider;
 
-  @Prop() accessToken?: string;
-  @Prop() refreshToken?: string;
-  @Prop() tokenType?: string;
-  @Prop() scope?: string;
-  @Prop() expiresAt?: Date;
+  @Prop()
+  accessToken?: string;
+
+  @Prop()
+  refreshToken?: string;
+  @Prop()
+  tokenType?: string;
+  @Prop()
+  scope?: string;
+  @Prop()
+  expiresAt?: Date;
 
   @Prop({ type: Object })
   metadata?: Record<string, any>;
