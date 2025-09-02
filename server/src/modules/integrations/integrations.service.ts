@@ -20,4 +20,21 @@ export class IntegrationsService {
     private readonly configService: ConfigService,
     private readonly slackConfig: SlackConfig,
   ) {}
+
+  getSlackAuthUrl(res: Response, state: string) {
+    const clientId = this.configService.get<string>('slack.clientId');
+    const redirectUri = this.configService.get<string>('slack.redirectUri');
+
+    if (!clientId || !redirectUri) {
+      throw new Error('Slack configuration missing');
+    }
+
+    const scopes = 'channels:read chat:write im:read im:write users:read';
+    // clientId=slackApp ID / scopes=the premissions / redirect= where slack will send the user back / state=random string stored in DB to protect from CSRF
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${encodeURIComponent(
+      scopes,
+    )}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+
+    return res.redirect(url);
+  }
 }
