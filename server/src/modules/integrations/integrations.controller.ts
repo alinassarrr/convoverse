@@ -27,8 +27,8 @@ export class IntegrationsController {
 
   @Get('slack/callback')
   handleSlackCallback(
-    @Query('code') code: string,
-    @Query('state') state: string,
+    @Query('code') code: string, // authorization code
+    @Query('state') state: string, //the random string we sent
   ) {
     return this.integrationsService.handleSlackCallback(code, state);
   }
