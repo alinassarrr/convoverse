@@ -37,4 +37,17 @@ export class IntegrationsService {
 
     return res.redirect(url);
   }
+
+  async handleSlackCallback(code: string, state: string) {
+    // verify token (state)
+    let decoded: { userId?: string }; //declare a obj to save the userId after verify
+    try {
+      decoded = this.jwtService.verify(state);
+      if (!decoded?.userId) {
+        throw new UnauthorizedException('Invalid state token');
+      }
+    } catch {
+      throw new UnauthorizedException('Invalid or expired state token');
+    }
+  }
 }
