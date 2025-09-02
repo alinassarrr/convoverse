@@ -82,5 +82,31 @@ export class IntegrationsService {
 
     const { access_token, refresh_token, team, authed_user, scope } =
       response.data;
+    // store in database
+    const userId = new Types.ObjectId(decoded.userId); // verified it was a request from user prevent CSRF
+
+    const integration = await this.IntegrationModel.findOneAndUpdate(
+      { userId, provider: IntegrationProvider.SLACK },
+      {
+        $set: {
+          accessToken: access_token,
+          refreshToken: refresh_token,
+          tokenType: 'Bearer',
+          scope,
+          metadata: {
+            team: team || {},
+            authed_user: authed_user || {},
+          },
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    return {
+      message: 'Slack account connected successfully!',
+      integrationId: integration._id,
+      team: team || {},
+      user: authed_user || {},
+    };
   }
 }
