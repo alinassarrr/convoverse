@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, UseGuards, Res, Query, Req } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { IntegrationsService } from './integrations.service';
-import { CreateIntegrationDto } from './dto/create-integration.dto';
-import { UpdateIntegrationDto } from './dto/update-integration.dto';
+import { AuthGuard } from '../../guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
+
+interface AuthenticatedRequest extends Request {
+  userId: string;
+}
 
 @Controller('integrations')
 export class IntegrationsController {
-  constructor(private readonly integrationsService: IntegrationsService) {}
+  constructor(
+    private readonly integrationsService: IntegrationsService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  @Post()
-  create(@Body() createIntegrationDto: CreateIntegrationDto) {
-    return this.integrationsService.create(createIntegrationDto);
+  @UseGuards(AuthGuard)
+  @Get('slack/connect')
+  redirectToSlack(@Res() res: Response, @Req() req: AuthenticatedRequest) {
+    const state = this.jwtService.sign(
+      { userId: req.userId },
+      { expiresIn: '1h' },
+    );
+    return this.integrationsService.getSlackAuthUrl(res, state);
   }
 
-  @Get()
-  findAll() {
-    return this.integrationsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.integrationsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIntegrationDto: UpdateIntegrationDto) {
-    return this.integrationsService.update(+id, updateIntegrationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.integrationsService.remove(+id);
+  @Get('slack/callback')
+  handleSlackCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+  ) {
+    return this.integrationsService.handleSlackCallback(code, state);
   }
 }
