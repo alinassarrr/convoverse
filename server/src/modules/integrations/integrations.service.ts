@@ -49,5 +49,13 @@ export class IntegrationsService {
     } catch {
       throw new UnauthorizedException('Invalid or expired state token');
     }
+
+    const clientId = this.slackConfig.clientId;
+    const clientSecret = this.slackConfig.clientSecret;
+    const redirectUri = this.slackConfig.redirectUri;
+
+    if (!clientId || !clientSecret || !redirectUri) {
+      throw new Error('Slack configuration missing');
+    }
   }
 }
