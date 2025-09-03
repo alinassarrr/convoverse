@@ -8,7 +8,7 @@ import axios from 'axios';
 import {
   Integration,
   IntegrationProvider,
-} from '../../schemas/integration.schema';
+} from '../../schemas/integrations.schema';
 import { SlackTokenResponseDTO } from './dto/slack-token-response.dto';
 import { SlackConfig } from 'src/config/slackConfig';
 
