@@ -29,11 +29,12 @@ export class IntegrationsService {
       throw new Error('Slack configuration missing');
     }
 
-    const scopes = 'channels:read chat:write im:read im:write users:read';
-    // clientId=slackApp ID / scopes=the premissions / redirect= where slack will send the user back / state=random string stored in DB to protect from CSRF
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${encodeURIComponent(
-      scopes,
-    )}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+    // Only using user scopes since we don't need a bot
+    const userScopes =
+      'channels:history chat:write im:history im:write users:read';
+
+    // clientId=slackApp ID / user_scope=the user permissions / redirect= where slack will send the user back / state=random string stored in DB to protect from CSRF
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&user_scope=${encodeURIComponent(userScopes)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
     return res.redirect(url);
   }
