@@ -109,4 +109,10 @@ export class IntegrationsService {
       user: authed_user || {},
     };
   }
+  async getSlackIntegration(userId: string) {
+    return this.IntegrationModel.findOne({
+      userId: new Types.ObjectId(userId),
+      provider: IntegrationProvider.SLACK,
+    });
+  }
 }
