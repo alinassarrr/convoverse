@@ -70,4 +70,33 @@ export class ConversationsService {
 
     return { syncedConversations: totalSynced };
   }
+  async syncMessages(token: string, conversationId: string, userId: string) {
+    let cursor: string | undefined = undefined;
+
+    do {
+      const { messages, response_metadata } =
+        await this.slackApiService.getConversationHistory(
+          token,
+          conversationId,
+          cursor,
+        );
+
+      for (const msg of messages) {
+        await this.messageModel.updateOne(
+          { messageId: msg.ts, conversationId, userID: userId },
+          {
+            $set: {
+              platform: 'slack',
+              text: msg.text,
+              sender: msg.user,
+              metadata: msg,
+            },
+          },
+          { upsert: true },
+        );
+      }
+
+      cursor = response_metadata?.next_cursor;
+    } while (cursor);
+  }
 }
