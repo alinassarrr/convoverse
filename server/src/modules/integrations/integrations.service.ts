@@ -21,7 +21,8 @@ export class IntegrationsService {
     private readonly slackConfig: SlackConfig,
   ) {}
 
-  getSlackAuthUrl(res: Response, state: string) {
+  generateSlackAuthUrl(userId: string): string {
+    const state = this.jwtService.sign({ userId }, { expiresIn: '1h' });
     const clientId = this.configService.get<string>('slack.clientId');
     const redirectUri = this.configService.get<string>('slack.redirectUri');
 
@@ -29,14 +30,12 @@ export class IntegrationsService {
       throw new Error('Slack configuration missing');
     }
 
-    // Only using user scopes since we don't need a bot
     const userScopes =
       'channels:history chat:write im:history im:write users:read';
 
-    // clientId=slackApp ID / user_scope=the user permissions / redirect= where slack will send the user back / state=random string stored in DB to protect from CSRF
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&user_scope=${encodeURIComponent(userScopes)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-
-    return res.redirect(url);
+    return `https://slack.com/oauth/v2/authorize?client_id=${clientId}&user_scope=${encodeURIComponent(
+      userScopes,
+    )}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
   }
 
   async handleSlackCallback(code: string, state: string) {
