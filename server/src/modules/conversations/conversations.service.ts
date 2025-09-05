@@ -7,4 +7,12 @@ import { Message } from 'src/schemas/messages.schema';
 import { SlackApiService } from 'src/common/slack.api.service';
 
 @Injectable()
-export class ConversationsService {}
+export class ConversationsService {
+  constructor(
+    private readonly integrationsService: IntegrationsService,
+    private readonly slackApiService: SlackApiService,
+    @InjectModel(Conversation.name)
+    private conversationModel: Model<Conversation>,
+    @InjectModel(Message.name) private messageModel: Model<Message>,
+  ) {}
+}
