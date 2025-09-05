@@ -28,4 +28,21 @@ export class SlackApiService {
       throw new BadRequestException('Failed to get conversations');
     return res.data;
   }
+
+  async getConversationHistory(
+    token: string,
+    channelId: string,
+    cursor?: string,
+  ): Promise<SlackConversationHistoryResponse> {
+    const res = await this.http.axiosRef.get<SlackConversationHistoryResponse>(
+      'https://slack.com/api/conversations.history',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { channel: channelId, limit: 200, cursor },
+      },
+    );
+    if (!res.data.ok)
+      throw new BadRequestException('Failed to get conversations');
+    return res.data;
+  }
 }
