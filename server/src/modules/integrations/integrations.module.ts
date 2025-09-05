@@ -18,5 +18,6 @@ import { SlackConfig } from 'src/config/slackConfig';
   ],
   controllers: [IntegrationsController],
   providers: [IntegrationsService, SlackConfig],
+  exports: [IntegrationsService],
 })
 export class IntegrationsModule {}
