@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Res, Query, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Req } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { IntegrationsService } from './integrations.service';
 import { AuthGuard } from '../../guards/auth.guard';
@@ -17,12 +17,8 @@ export class IntegrationsController {
 
   @UseGuards(AuthGuard)
   @Get('slack/connect')
-  redirectToSlack(@Res() res: Response, @Req() req: AuthenticatedRequest) {
-    const state = this.jwtService.sign(
-      { userId: req.userId },
-      { expiresIn: '1h' },
-    );
-    return this.integrationsService.getSlackAuthUrl(res, state);
+  redirectToSlack(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.generateSlackAuthUrl(req.userId);
   }
 
   @Get('slack/callback')
