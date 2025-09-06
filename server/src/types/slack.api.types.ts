@@ -10,12 +10,11 @@ export type SlackConversation = {
   num_members?: number;
 };
 
-export interface SlackConversationsListResponse {
+export type SlackConversationsListResponse = {
   ok: boolean;
   channels: SlackConversation[];
   response_metadata?: { next_cursor?: string };
-}
-
+};
 export interface SlackMessage {
   ts: string;
   text?: string;
