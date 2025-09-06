@@ -7,7 +7,7 @@ import {
   Integration,
   IntegrationSchema,
 } from '../../schemas/integrations.schema';
-import { SlackConfig } from 'src/config/slackConfig';
+import { SlackConfig } from 'src/config/slack.config';
 
 @Module({
   imports: [
