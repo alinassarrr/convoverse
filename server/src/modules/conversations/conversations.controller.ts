@@ -2,7 +2,9 @@ import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { ConversationsService } from './conversations.service';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('conversations')
 @UseGuards(AuthGuard)
 export class ConversationsController {
