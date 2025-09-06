@@ -10,7 +10,7 @@ import {
   IntegrationProvider,
 } from '../../schemas/integrations.schema';
 import { SlackTokenResponseDTO } from './dto/slack-token-response.dto';
-import { SlackConfig } from 'src/config/slackConfig';
+import { SlackConfig } from 'src/config/slack.config';
 
 @Injectable()
 export class IntegrationsService {
