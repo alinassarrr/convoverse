@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class SlackConfig {
   constructor(private readonly configService: ConfigService) {}
-  // get used to access as a prop so we can call .clientId
+
   get clientId() {
     return this.configService.get<string>('slack.clientId');
   }
