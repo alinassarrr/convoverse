@@ -4,7 +4,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
     .setTitle('ConvoVerse API')
-    .setDescription('API Documentation for ConvoVerse - Slack Integration Platform')
+    .setDescription(
+      'API Documentation for ConvoVerse - Slack Integration Platform',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -15,10 +17,10 @@ export function setupSwagger(app: INestApplication): void {
         description: 'Enter JWT token',
         in: 'header',
       },
-      'JWT-auth', // This name is important for @ApiBearerAuth() decorator
+      'JWT-auth',
     )
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
 
   const options = {
