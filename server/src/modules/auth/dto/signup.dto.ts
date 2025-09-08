@@ -8,17 +8,26 @@ import {
 } from 'class-validator';
 
 export class SignUpDTO {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'Full name of the user',
+  })
   @IsNotEmpty()
   @IsString()
   fullname: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: 'john.doe@company.com',
+    description: 'Email address for the account',
+  })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: 'MySecureP@ss123',
+    description: 'Password must be at least 8 characters with uppercase, lowercase, and number/special character',
+  })
   @IsNotEmpty()
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
