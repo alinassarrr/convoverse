@@ -1,9 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import type { Response } from 'express';
 import axios from 'axios';
 import {
   Integration,
@@ -22,7 +25,16 @@ export class IntegrationsService {
   ) {}
 
   generateSlackAuthUrl(userId: string): string {
-    const state = this.jwtService.sign({ userId }, { expiresIn: '1h' });
+    const secret = this.configService.get<string>('jwt.secret');
+    console.log('Generating state token for userId:', userId);
+    console.log('Secret length:', secret?.length);
+
+    const payload = { userId };
+    console.log('JWT payload:', JSON.stringify(payload, null, 2));
+
+    const state = this.jwtService.sign(payload, { secret, expiresIn: '1h' });
+    console.log('Generated state token:', state.substring(0, 50) + '...');
+
     const clientId = this.configService.get<string>('slack.clientId');
     const redirectUri = this.configService.get<string>('slack.redirectUri');
 
@@ -42,11 +54,21 @@ export class IntegrationsService {
     // verify token (state)
     let decoded: { userId?: string }; //declare a obj to save the userId after verify
     try {
-      decoded = this.jwtService.verify(state);
+      const secret = this.configService.get<string>('jwt.secret');
+      console.log('Verifying state token:', state.substring(0, 50) + '...');
+      console.log('Using secret length:', secret?.length);
+
+      decoded = this.jwtService.verify(state, { secret });
+      console.log('Decoded JWT payload:', JSON.stringify(decoded, null, 2));
+
       if (!decoded?.userId) {
+        console.error('JWT payload missing userId:', decoded);
         throw new UnauthorizedException('Invalid state token');
       }
-    } catch {
+      console.log('JWT verification successful, userId:', decoded.userId);
+    } catch (error) {
+      console.error('JWT verification error:', error.message);
+      console.error('Error details:', error);
       throw new UnauthorizedException('Invalid or expired state token');
     }
 
@@ -114,5 +136,45 @@ export class IntegrationsService {
       userId: new Types.ObjectId(userId),
       provider: IntegrationProvider.SLACK,
     });
+  }
+
+  async handleSlackSync(userId: string) {
+    const integrated = await this.getSlackIntegration(userId);
+    if (!integrated) throw new UnauthorizedException('Slack unauthorized');
+    const slackAccessToken = integrated.metadata?.authed_user?.access_token;
+    if (!slackAccessToken)
+      throw new BadRequestException('Slack access token not found');
+
+    const n8nWebHook =
+      'https://ali-nassar.app.n8n.cloud/webhook-test/7b2d8bc6-9637-4e1a-9606-9d673fb19158';
+
+    try {
+      const webhookPayload = {
+        userId,
+        slackAccessToken,
+        authorizationHeader: `Bearer ${slackAccessToken}`,
+        slackApiUrl: 'https://slack.com/api/conversations.list',
+        team: integrated.metadata?.team,
+        scopes: integrated.metadata?.authed_user?.scope,
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log('Sending to n8n webhook:', {
+        userId,
+        tokenPrefix: slackAccessToken.substring(0, 12) + '...',
+        scopes: integrated.metadata?.authed_user?.scope,
+      });
+
+      await axios.post(n8nWebHook, webhookPayload);
+      return {
+        success: true,
+        message: 'n8n webhook triggered successfully',
+        tokenSent: slackAccessToken.substring(0, 12) + '...',
+        scopes: integrated.metadata?.authed_user?.scope,
+      };
+    } catch (error) {
+      console.error('n8n webhook error:', error.message);
+      throw new BadRequestException(`Failed to trigger n8n: ${error.message}`);
+    }
   }
 }
