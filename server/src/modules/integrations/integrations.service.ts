@@ -146,7 +146,7 @@ export class IntegrationsService {
       throw new BadRequestException('Slack access token not found');
 
     const n8nWebHook =
-      'https://ali-nassar.app.n8n.cloud/webhook-test/7b2d8bc6-9637-4e1a-9606-9d673fb19158';
+      'http://localhost:5678/webhook-test/7b2d8bc6-9637-4e1a-9606-9d673fb19158';
 
     try {
       const webhookPayload = {
