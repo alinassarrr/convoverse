@@ -1,40 +1,77 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ timestamps: true, collection: 'conversations' })
+@Schema({ collection: 'conversations', timestamps: false })
 export class Conversation extends Document {
   @Prop({ required: true })
-  platform: string;
+  provider: string; // 'slack', 'whatsapp', 'gmail'
 
   @Prop({ required: true })
-  conversationId: string;
-
-  @Prop()
-  userId?: string; // for dm
+  channel: string; // Channel/conversation ID
 
   @Prop()
   name?: string; // channel name
 
-  @Prop({ enum: ['channel', 'dm'] })
-  type: string;
+  @Prop()
+  is_im?: boolean; // true for DMs
 
   @Prop()
-  isPrivate?: boolean;
+  user?: string; // for DM, the other user ID
 
-  @Prop({ type: [String], default: [] })
-  members?: string[]; // user IDs
-  @Prop()
-  topic?: string;
-  @Prop()
-  purpose?: string;
-  @Prop()
-  numMembers?: number;
+  @Prop({ type: Object })
+  purpose?: {
+    value: string;
+    creator: string;
+    last_set: number;
+  };
+
+  @Prop({ type: Object })
+  topic?: {
+    value: string;
+    creator: string;
+    last_set: number;
+  } | null;
 
   @Prop()
-  isIm?: boolean;
+  created?: number; // Unix timestamp
 
-  @Prop({ required: true })
-  userID: string;
+  @Prop()
+  updated?: number; // Unix timestamp
+
+  @Prop({ type: [String] })
+  shared_team_ids?: string[];
+
+  // Virtual properties for backward compatibility
+  get platform() {
+    return this.provider;
+  }
+
+  get conversationId() {
+    return this.channel;
+  }
+
+  get type() {
+    return this.is_im ? 'dm' : 'channel';
+  }
+
+  get isIm() {
+    return this.is_im;
+  }
+
+  get isPrivate() {
+    // For Slack, we can infer this or add logic based on channel ID patterns
+    return this.channel?.startsWith('D'); // DMs start with D in Slack
+  }
+
+  // get createdAt() {
+  //   return this.created
+  //     ? new Date(this.created * 1000)
+  //     : new Date(this._id.getTimestamp());
+  // }
+
+  // get updatedAt() {
+  //   return this.updated ? new Date(this.updated / 1000) : this.createdAt; // updated seems to be in milliseconds
+  // }
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
