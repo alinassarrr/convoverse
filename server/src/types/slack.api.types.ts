@@ -15,16 +15,16 @@ export type SlackConversationsListResponse = {
   channels: SlackConversation[];
   response_metadata?: { next_cursor?: string };
 };
-export interface SlackMessage {
+export type SlackMessage = {
   ts: string;
   text?: string;
   user?: string;
   // keep rest as unknown to avoid `any`
   [key: string]: unknown;
-}
+};
 
-export interface SlackConversationHistoryResponse {
+export type SlackConversationHistoryResponse = {
   ok: boolean;
   messages: SlackMessage[];
   response_metadata?: { next_cursor?: string };
-}
+};
