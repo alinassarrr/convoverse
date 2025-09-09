@@ -1,0 +1,646 @@
+{
+  "name": "ConvoVerse",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "7b2d8bc6-9637-4e1a-9606-9d673fb19158",
+        "responseMode": "=onReceived",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        48,
+        192
+      ],
+      "id": "cd59010a-ffdc-4287-9543-13bb78075293",
+      "name": "Webhook",
+      "webhookId": "7b2d8bc6-9637-4e1a-9606-9d673fb19158"
+    },
+    {
+      "parameters": {
+        "content": "## Slack Integration\n",
+        "height": 832,
+        "width": 1648,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "f5de0a99-5866-48a9-bcbb-e155104a3a94",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e3e6baef-a97f-4fe2-85d5-b9ed6d2c4c3c",
+              "name": "body.slackAccessToken",
+              "value": "={{ $json.body.slackAccessToken }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        192
+      ],
+      "id": "9dc88779-f6f6-4d92-ba22-030c32648033",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "getAll",
+        "limit": "=20",
+        "filters": {
+          "excludeArchived": false,
+          "types": [
+            "public_channel",
+            "private_channel",
+            "mpim",
+            "im"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        192
+      ],
+      "id": "b1704094-395a-4fe8-b5c9-393387996776",
+      "name": "Get many channels",
+      "webhookId": "3dacea58-0d0d-477c-828c-05bc2042303e",
+      "credentials": {
+        "slackApi": {
+          "id": "tRJAERxapP5IHWAS",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "history",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.channel }}",
+          "mode": "id"
+        },
+        "limit": "=50",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1168,
+        192
+      ],
+      "id": "00940d7f-65cb-4b47-ad15-030f6df08ac6",
+      "name": "Get the history of a channel",
+      "webhookId": "0a95c830-df36-4112-bfe1-3a799e2c626c",
+      "credentials": {
+        "slackApi": {
+          "id": "tRJAERxapP5IHWAS",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "user": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        416
+      ],
+      "id": "f87ce58f-ac7a-464c-a2cd-d5e99a242b14",
+      "name": "Get information about a user",
+      "webhookId": "5f30497e-32ac-40db-be55-22450f640f76",
+      "credentials": {
+        "slackApi": {
+          "id": "bg6wVk69XTtJVMcn",
+          "name": "User Slack Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "conversations",
+        "updateKey": "updated",
+        "fields": "=channel,created,name,is_im,updated,user,purpose,topic,shared_team_ids",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        192
+      ],
+      "id": "6e9d8e11-6b32-44f3-993e-6fe6fc54c596",
+      "name": "Add Conversation To Collection",
+      "credentials": {
+        "mongoDb": {
+          "id": "EpxWeuhlaJSgFdsK",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2b7f5d3-3132-4009-a8ae-92ba2d4c37fa",
+              "name": "channel",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a43eeee4-f956-40ab-8b45-7e9420519373",
+              "name": "created",
+              "value": "={{ $json.created }}",
+              "type": "number"
+            },
+            {
+              "id": "186152d0-4d19-4a76-8e29-b4ac00df4870",
+              "name": "updated",
+              "value": "={{ $json.updated }}",
+              "type": "number"
+            },
+            {
+              "id": "16c96cc3-b1d1-469d-a4a1-c2b7b8e8ca47",
+              "name": "is_im",
+              "value": "={{ $json.is_im }}",
+              "type": "boolean"
+            },
+            {
+              "id": "d546fbd2-3b35-495f-994f-a888c010564f",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "4a743159-8e0f-456e-9f09-c4cba45de5cc",
+              "name": "purpose",
+              "value": "={{ $json.purpose }}",
+              "type": "object"
+            },
+            {
+              "id": "9b7a7c52-6a66-4862-a453-0e9ed934a24b",
+              "name": "shared_team_ids",
+              "value": "={{ $json.shared_team_ids }}",
+              "type": "array"
+            },
+            {
+              "id": "7440336c-aae8-4f61-ac3c-219d448185a3",
+              "name": "num_members",
+              "value": "={{ $json.num_members }}",
+              "type": "number"
+            },
+            {
+              "id": "53dca8f8-4905-4fd6-9347-2af7ba2b06bb",
+              "name": "properties.tabs",
+              "value": "={{ $json.properties.tabs }}",
+              "type": "string"
+            },
+            {
+              "id": "c47052f0-1291-497a-a466-d5a534f17c9f",
+              "name": "user",
+              "value": "={{ $json.user }}",
+              "type": "string"
+            },
+            {
+              "id": "9be7cefc-8bd0-4afe-98e6-e0c56ed43b9a",
+              "name": "context_team_id",
+              "value": "={{ $json.context_team_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        192
+      ],
+      "id": "2f627789-dc2f-4f3f-bd61-2d15b0f9e1b6",
+      "name": "Conversation Fields",
+      "retryOnFail": false,
+      "waitBetweenTries": 300,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "slack_users",
+        "updateKey": "=updated",
+        "fields": "=id,name,profile",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        416
+      ],
+      "id": "b6350157-79cf-46e7-9d4b-3ae1d9c55b3a",
+      "name": "Add users with data",
+      "credentials": {
+        "mongoDb": {
+          "id": "EpxWeuhlaJSgFdsK",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "messages",
+        "updateKey": "text",
+        "fields": "=channel,text,user,type,ts",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        400
+      ],
+      "id": "0f58c63b-a634-4209-88e7-2185b72c865c",
+      "name": "Add Messages",
+      "credentials": {
+        "mongoDb": {
+          "id": "EpxWeuhlaJSgFdsK",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb67bc61-bc27-441c-8eea-54bef8d28688",
+              "leftValue": "={{ $json.subtype }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "97d482f9-3b0a-413b-96e7-c4e0c7ec06b1",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "[empty]",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        400
+      ],
+      "id": "aa4b3972-ce26-4c84-956b-aa25441f94dc",
+      "name": "Filter message on subtype"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9bd4f91-7590-4aa8-8b13-8d3400e221df",
+              "name": "channel",
+              "value": "={{ $('Add Conversation To Collection').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "14a4b288-cba7-4e0a-81eb-cc3532ce1d4b",
+              "name": "subtype",
+              "value": "={{ $json.subtype }}",
+              "type": "string"
+            },
+            {
+              "id": "28c3c590-4fbc-4832-b077-74c9e93e91d5",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "3d27c1fb-91b2-4a14-b8f6-ce7242e8aae2",
+              "name": "user",
+              "value": "={{ $json.user }}",
+              "type": "string"
+            },
+            {
+              "id": "3dc44e62-9062-4075-8668-6715a2d7a7e7",
+              "name": "type",
+              "value": "={{ $json.type }}",
+              "type": "string"
+            },
+            {
+              "id": "c5857b41-53d9-43d5-bd2c-bdaa8b3dd31d",
+              "name": "ts",
+              "value": "={{ $json.ts }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        400
+      ],
+      "id": "f332d220-d9e2-440e-8914-e10e7df90133",
+      "name": "Set Conversation Data"
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "watchWorkspace": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        624
+      ],
+      "id": "7e1aed75-6caa-4bf0-b76f-ddc3f0a20129",
+      "name": "Slack Trigger",
+      "webhookId": "d7cff5c8-52de-4d5d-8b44-27602c8b36a8",
+      "credentials": {
+        "slackApi": {
+          "id": "bg6wVk69XTtJVMcn",
+          "name": "User Slack Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fb0cbcad-9e6c-47db-8c60-24d56eb79aae",
+              "leftValue": "={{ $json.isNotEmpty() }}",
+              "rightValue": "={{false}}",
+              "operator": {
+                "type": "boolean",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        400
+      ],
+      "id": "7ae51ae4-f7cf-42f6-8dda-87651dca29b3",
+      "name": "If User Exist"
+    },
+    {
+      "parameters": {
+        "collection": "slack_users",
+        "options": {
+          "limit": 1
+        },
+        "query": "={\n  \"id\":\"{{ $json.user }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        400
+      ],
+      "id": "2f031b80-7748-4415-952f-b8d076b3cfd7",
+      "name": "Find user",
+      "credentials": {
+        "mongoDb": {
+          "id": "EpxWeuhlaJSgFdsK",
+          "name": "MongoDB account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get many channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many channels": {
+      "main": [
+        [
+          {
+            "node": "Conversation Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the history of a channel": {
+      "main": [
+        [
+          {
+            "node": "Set Conversation Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get information about a user": {
+      "main": [
+        [
+          {
+            "node": "Add users with data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Conversation To Collection": {
+      "main": [
+        [
+          {
+            "node": "Get the history of a channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Fields": {
+      "main": [
+        [
+          {
+            "node": "Add Conversation To Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Messages": {
+      "main": [
+        [
+          {
+            "node": "Find user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter message on subtype": {
+      "main": [
+        [
+          {
+            "node": "Add Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Conversation Data": {
+      "main": [
+        [
+          {
+            "node": "Filter message on subtype",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter message on subtype",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If User Exist": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get information about a user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find user": {
+      "main": [
+        [
+          {
+            "node": "If User Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "errorWorkflow": "SckPX66HVsrU3K6f",
+    "timezone": "Asia/Beirut",
+    "timeSavedPerExecution": 2
+  },
+  "versionId": "9cafc64a-8fce-47e2-92e0-cd4c3418ca2e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e1d959d11fb763a501323959707e997c851d272a2d5aa0e94ce49fd730b731b"
+  },
+  "id": "SckPX66HVsrU3K6f",
+  "tags": []
+}
