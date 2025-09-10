@@ -41,6 +41,9 @@ export class Conversation extends Document {
   @Prop({ type: [String] })
   shared_team_ids?: string[];
 
+  @Prop()
+  last_message_ts?: string; // Timestamp of the last message in this conversation
+
   // Virtual properties for backward compatibility
   get platform() {
     return this.provider;
@@ -62,16 +65,6 @@ export class Conversation extends Document {
     // For Slack, we can infer this or add logic based on channel ID patterns
     return this.channel?.startsWith('D'); // DMs start with D in Slack
   }
-
-  // get createdAt() {
-  //   return this.created
-  //     ? new Date(this.created * 1000)
-  //     : new Date(this._id.getTimestamp());
-  // }
-
-  // get updatedAt() {
-  //   return this.updated ? new Date(this.updated / 1000) : this.createdAt; // updated seems to be in milliseconds
-  // }
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
