@@ -1,29 +1,50 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+  ValidationPipe,
+  Req,
+} from '@nestjs/common';
+import {
   ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
 import { ConversationsService } from './conversations.service';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { ListConversationsDto } from './dto/list-conversation.dto';
+import {
+  ConversationListResponseDto,
+  MarkAsReadDto,
+} from './dto/conversation-response.dto';
+import type { Request } from 'express';
+import { ListLatestConversationDto } from './dto/list-latest-conversation.dto';
+
+type AuthedReq = Request & { user: { userId: string } };
 
 @ApiTags('Conversations')
 @ApiBearerAuth('JWT-auth')
-@Controller('conversations')
 @UseGuards(AuthGuard)
+@Controller('conversations')
 export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}
 
-  @ApiOperation({ summary: 'Sync conversations and messages from Slack' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sync completed',
+  @ApiOperation({
+    summary: 'List conversations (sorted by latest message)',
   })
-  @ApiResponse({ status: 400, description: 'Slack not connected' })
-  @Get('sync/slack/messages')
-  async syncSlack(@Req() req: Request & { user: { userId: string } }) {
-    return this.conversationsService.syncSlack(req.user.userId);
+  @ApiResponse({ status: 200, type: ConversationListResponseDto })
+  @Get()
+  listConversations(
+    @Req() req: AuthedReq,
+    @Query(new ValidationPipe({ transform: true }))
+    dto: ListLatestConversationDto,
+  ) {
+    return this.conversationsService.listConversations(dto);
   }
 }
