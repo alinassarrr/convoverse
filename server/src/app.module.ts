@@ -7,6 +7,7 @@ import config from './config/config';
 import { UsersModule } from './modules/users/users.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
+// import { UnifiedInboxModule } from './modules/unified-inbox/unified-inbox.module';
 
 @Module({
   imports: [
@@ -34,5 +35,7 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
     IntegrationsModule,
     ConversationsModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
