@@ -47,4 +47,15 @@ export class ConversationsController {
   ) {
     return this.conversationsService.listConversations(dto);
   }
+
+  @ApiOperation({ summary: 'List messages in a conversation' })
+  @ApiParam({ name: 'channel', description: 'Conversation/channel ID' })
+  @ApiResponse({ status: 200 })
+  @Get(':channel/messages')
+  listMessages(
+    @Param('channel') channel: string,
+    @Query('provider') provider: string,
+  ) {
+    return this.conversationsService.listMessages(channel, provider);
+  }
 }
