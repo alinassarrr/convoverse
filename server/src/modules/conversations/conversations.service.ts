@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import { Conversation } from 'src/schemas/conversations.schema';
 import { Message } from 'src/schemas/messages.schema';
-import {} from './dto/list-conversation.dto';
 import { ListLatestConversationDto } from './dto/list-latest-conversation.dto';
 import { Integration } from 'src/schemas/integrations.schema';
 

@@ -18,7 +18,6 @@ import {
 } from '@nestjs/swagger';
 import { ConversationsService } from './conversations.service';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { ListConversationsDto } from './dto/list-conversation.dto';
 import {
   ConversationListResponseDto,
   MarkAsReadDto,
