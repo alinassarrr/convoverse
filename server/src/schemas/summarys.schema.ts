@@ -19,8 +19,11 @@ export class Summary extends Document {
     default: 'pending',
   })
   status: string;
-  // when to run the next summary
-  @Prop({ type: Date, default: null }) scheduledAt: Date | null;
 }
 
 export const SummarySchema = SchemaFactory.createForClass(Summary);
+// one summary per conversation
+SummarySchema.index(
+  { conversationId: 1, lastMessaeTs: -1 },
+  { unique: true, sparse: true },
+);
