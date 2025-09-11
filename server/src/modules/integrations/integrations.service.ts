@@ -138,6 +138,14 @@ export class IntegrationsService {
     });
   }
 
+  async getUserIntegrations(userId: string) {
+    return this.IntegrationModel.find({
+      userId: new Types.ObjectId(userId),
+    })
+      .lean()
+      .exec();
+  }
+
   async handleSlackSync(userId: string) {
     const integrated = await this.getSlackIntegration(userId);
     if (!integrated) throw new UnauthorizedException('Slack unauthorized');
