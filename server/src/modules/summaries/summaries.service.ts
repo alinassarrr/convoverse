@@ -6,6 +6,7 @@ import { Message } from 'src/schemas/messages.schema';
 import { Summary } from 'src/schemas/summarys.schema';
 import { TriggerSummarizationDto } from './dto/trigger-summary.dto';
 import { SaveSummaryDto } from './dto/save-summary.dto';
+import { Integration } from 'src/schemas/integrations.schema';
 
 @ApiTags('Summaries')
 @Injectable()
@@ -13,6 +14,8 @@ export class SummariesService {
   constructor(
     @InjectModel(Summary.name) private readonly summaryModel: Model<Summary>,
     @InjectModel(Message.name) private readonly messageModel: Model<Message>,
+    @InjectModel(Integration.name)
+    private readonly integrationModel: Model<Integration>,
   ) {}
   // called by n8n or button on UI to get unsummarized messages
   // waiting for code review
@@ -40,13 +43,38 @@ export class SummariesService {
     if (!messages.length) {
       return { status: 'no new messages' };
     }
+    // get user info for messages
+    const userIds = [...new Set(messages.map((msg) => msg.user))];
 
-    const content = messages.map((msg) => ({
-      id: msg._id,
-      user: msg.user,
-      text: msg.text,
-      ts: msg.ts,
-    }));
+    const slackUsers = await this.messageModel.db
+      .collection('slack_users')
+      .find({ id: { $in: userIds } })
+      .toArray();
+
+    const integration = await this.integrationModel
+      .findOne({ provider })
+      .lean();
+
+    let authedUserId: string;
+    if (provider === 'slack') {
+      authedUserId = integration?.metadata?.authed_user?.id;
+    }
+
+    const userMap = slackUsers.reduce((acc, user) => {
+      acc[user.id] = user.profile?.real_name;
+      return acc;
+    });
+
+    const content = messages.map((msg) => {
+      let is_Me = authedUserId && msg.user === authedUserId;
+      return {
+        id: msg._id,
+        sender: msg.user,
+        senderName: is_Me ? 'Me' : userMap[msg.user],
+        text: msg.text,
+        ts: msg.ts,
+      };
+    });
 
     return {
       conversationId,
