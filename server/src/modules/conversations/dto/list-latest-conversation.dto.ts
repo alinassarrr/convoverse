@@ -13,7 +13,7 @@ export class ListLatestConversationDto {
 
   @ApiPropertyOptional({
     description: 'Max number of conversations to return',
-    default: 15,
+    default: null,
     minimum: 1,
     maximum: 100,
   })
@@ -24,5 +24,5 @@ export class ListLatestConversationDto {
     return Number.isFinite(n) ? n : v; // keep invalid to trigger IsInt message
   })
   @IsOptional()
-  limit?: number = 15;
+  limit?: number = 50;
 }
