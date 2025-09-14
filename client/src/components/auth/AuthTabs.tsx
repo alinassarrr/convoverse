@@ -37,7 +37,7 @@ export function AuthTabs() {
             height={150}
           />
         </div>
-        <h1 className="text-2xl font-bold">ConvoVerse</h1>
+        <h1 className="text-2xl font-bold ">ConvoVerse</h1>
         <p className="text-gray-300 text-sm">
           AI-Powered Unified Communication Platform
         </p>
