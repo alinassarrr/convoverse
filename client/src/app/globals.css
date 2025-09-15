@@ -6,7 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-nunito: var(--font-nunito, sans-serif);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -31,6 +32,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-tab: var(--tab);
+  --color-tab-foreground: var(--tab-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -57,7 +60,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: rgba(16, 23, 32, 0.8);
   --ring: #5a57ff;
-
+  --tab: #101720;
+  --tab-foreground: #ffffff;
   --sidebar: #252525;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #5a57ff;
@@ -87,6 +91,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: #5a57ff;
+  --tab: #101720;
+  --tab-foreground: #ffffff;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
