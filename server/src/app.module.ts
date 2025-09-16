@@ -9,6 +9,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 // import { UnifiedInboxModule } from './modules/unified-inbox/unified-inbox.module';
 import { SummariesModule } from './modules/summaries/summaries.module';
+import { EmbeddingsModule } from './modules/embeddings/embeddings.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SummariesModule } from './modules/summaries/summaries.module';
     IntegrationsModule,
     ConversationsModule,
     SummariesModule,
+    EmbeddingsModule,
   ],
   controllers: [],
   providers: [],
