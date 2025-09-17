@@ -52,7 +52,6 @@ export function AuthTabs() {
         throw new Error(data?.message || "Authentication failed");
       }
 
-      // Success!
       toast.success(
         mode === "login" ? "Welcome back!" : "Accoun  t created successfully!",
         {
@@ -64,14 +63,14 @@ export function AuthTabs() {
         }
       );
 
-      // Redirect after short delay
       setTimeout(() => {
+        setIsLoading(true);
         if (mode === "login") {
           router.push("/inbox");
         } else {
           router.push("/integration");
         }
-      }, 1000);
+      }, 500);
     } catch (error: unknown) {
       toast.error(mode === "login" ? "Sign in failed" : "Registration failed", {
         description:
