@@ -12,6 +12,11 @@ import {
   IntegrationSchema,
 } from 'src/schemas/integrations.schema';
 import { Summary, SummarySchema } from 'src/schemas/summarys.schema';
+import { Embedding, EmbeddingSchema } from 'src/schemas/embeddings.schema';
+import { Action, ActionSchema } from 'src/schemas/action.schema';
+import { AiService } from './services/ai.service';
+import { RateLimiterService } from './services/rate-limiter.service';
+import { MessageProcessorService } from './services/message-processor.service';
 
 @Module({
   imports: [
@@ -20,10 +25,17 @@ import { Summary, SummarySchema } from 'src/schemas/summarys.schema';
       { name: Message.name, schema: MessageSchema },
       { name: Integration.name, schema: IntegrationSchema },
       { name: Summary.name, schema: SummarySchema },
+      { name: Embedding.name, schema: EmbeddingSchema },
+      { name: Action.name, schema: ActionSchema },
     ]),
   ],
   controllers: [SummariesController],
-  providers: [SummariesService, SummariesService],
+  providers: [
+    SummariesService,
+    AiService,
+    RateLimiterService,
+    MessageProcessorService,
+  ],
   exports: [SummariesService],
 })
 export class SummariesModule {}
