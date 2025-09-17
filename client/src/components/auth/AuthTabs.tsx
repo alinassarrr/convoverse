@@ -106,7 +106,7 @@ export function AuthTabs() {
 
         <Button
           type="submit"
-          className="w-full bg-primary hover:bg-indigo-500 mt-6"
+          className="w-full bg-primary hover:bg-indigo-500 mt-6 text-lg font-medium cursor-pointer"
         >
           {isSignin ? "Sign In" : "Sign Up"}
         </Button>
