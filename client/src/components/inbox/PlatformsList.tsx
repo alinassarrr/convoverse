@@ -26,15 +26,15 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
   const platformConfigs = {
     slack: {
       name: "Slack",
-      icon: <SlackIcon className="w-5 h-5" />,
+      icon: <SlackIcon className="w-5 h-5 text-white" />,
     },
     whatsapp: {
       name: "WhatsApp",
-      icon: <WhatsAppIcon className="w-5 h-5" />,
+      icon: <WhatsAppIcon className="w-5 h-5 text-white" />,
     },
     gmail: {
       name: "Gmail",
-      icon: <GmailIcon className="w-5 h-5" />,
+      icon: <GmailIcon className="w-5 h-5 text-white" />,
     },
   };
 
@@ -49,20 +49,17 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
         const data = await response.json();
 
         // Convert integration status to platform list
-        const connectedPlatforms: Platform[] = Object.entries(data.status).map(
-          ([key, connected]) => ({
+        const connectedPlatforms: Platform[] = Object.entries(data.status)
+          .map(([key, connected]) => ({
             id: key,
             name:
               platformConfigs[key as keyof typeof platformConfigs]?.name || key,
             icon: platformConfigs[key as keyof typeof platformConfigs]
               ?.icon || <MessageCircleMoreIcon className="w-5 h-5" />,
             connected: connected as boolean,
-            color:
-              // platformConfigs[key as keyof typeof platformConfigs]?.color ||
-              "bg-gray-500",
-          })
-        );
-        // .filter((platform) => platform.connected); // Only show connected platforms
+            color: "bg-gray-500",
+          }))
+          .filter((platform) => platform.connected); // Only show connected platforms
 
         setPlatforms(connectedPlatforms);
       } else {
@@ -90,38 +87,48 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
       {/* All Messages - Always shown */}
       <Link
         href="/inbox"
-        className={`rounded-md p-2 flex items-center gap-3 text-sm font-medium transition-colors ${
+        className={`rounded-md p-1 pl-2 pr-2 flex items-center justify-between  font-medium transition-colors ${
           activePlatform === "all"
-            ? "bg-primary text-primary-foreground"
-            : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+            ? "bg-emerald-600"
+            : "bg-gray-700 hover:bg-gray-600"
         }`}
       >
-        <div className="w-5 h-5 rounded-sm bg-emerald-600 flex items-center justify-center">
-          <MessageCircleMoreIcon className="w-3 h-3 text-white" />
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
+            <MessageCircleMoreIcon className="w-5 h-5" />
+          </div>
+          <span>All Messages</span>
         </div>
-        All Messages
-        {/* badge */}
+        <div className="bg-blue-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
+          24
+        </div>
       </Link>
 
-      {/* Platforms */}
+      {/* Connected Platforms */}
       {platforms.length > 0 ? (
         platforms.map((platform) => (
           <Link
             key={platform.id}
             href={`/inbox/${platform.id}`}
-            className={`rounded-md p-2 flex items-center gap-3 text-sm font-medium transition-colors ${
+            className={`rounded-md p-1 pl-2 pr-2 flex items-center justify-between  font-medium transition-colors ${
               activePlatform === platform.id
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                ? "bg-emerald-600"
+                : "bg-gray-700 hover:bg-gray-600"
             }`}
           >
-            <div
-              className={`w-5 h-5 rounded-sm  flex items-center justify-center`}
-            >
-              {platform.icon}
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-lg  flex items-center justify-center">
+                {platform.icon}
+              </div>
+              <span>{platform.name}</span>
             </div>
-            {platform.name}
-            {/*badge */}
+            <div className="bg-gray-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
+              {platform.id === "slack"
+                ? "10"
+                : platform.id === "whatsapp"
+                ? "8"
+                : "6"}
+            </div>
           </Link>
         ))
       ) : (
