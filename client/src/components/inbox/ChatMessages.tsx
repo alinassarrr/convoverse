@@ -223,7 +223,7 @@ export function ChatMessages({
                 className={`max-w-[70%] rounded-lg p-3 ${
                   message.isFromUser
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted border-l-4 border-l-emerald-500"
+                    : "border-l-4 border-l-emerald-500 bg-[#4E4E4E]"
                 }`}
               >
                 {!message.isFromUser && (
@@ -236,7 +236,7 @@ export function ChatMessages({
                     </span>
                   </div>
                 )}
-                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                <p className="text-sm whitespace-pre-wrap ">{message.text}</p>
                 {message.isFromUser && (
                   <div className="text-xs text-primary-foreground/70 mt-1 text-right">
                     {formatMessageTime(message.ts)}

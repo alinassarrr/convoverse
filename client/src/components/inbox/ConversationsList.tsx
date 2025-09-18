@@ -149,13 +149,18 @@ export function ConversationsList({
             <div className="relative">
               <Avatar className="w-10 h-10">
                 <AvatarImage
-                  src={
+                  src={conversation.is_im ? conversation.sender.avatar : ""}
+                  alt={
                     conversation.is_im
-                      ? conversation.sender.avatar
-                      : "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM="
+                      ? conversation.sender.display_name
+                      : conversation.name
                   }
-                  alt={conversation.sender.display_name}
                 />
+                {!conversation.is_im && (
+                  <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
+                    {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+                  </div>
+                )}
               </Avatar>
               {/* Platform indicator */}
               <div
