@@ -49,8 +49,8 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
         const data = await response.json();
 
         // Convert integration status to platform list
-        const connectedPlatforms: Platform[] = Object.entries(data.status)
-          .map(([key, connected]) => ({
+        const connectedPlatforms: Platform[] = Object.entries(data.status).map(
+          ([key, connected]) => ({
             id: key,
             name:
               platformConfigs[key as keyof typeof platformConfigs]?.name || key,
@@ -58,8 +58,9 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
               ?.icon || <MessageCircleMoreIcon className="w-5 h-5" />,
             connected: connected as boolean,
             color: "bg-gray-500",
-          }))
-          .filter((platform) => platform.connected); // Only show connected platforms
+          })
+        );
+        // .filter((platform) => platform.connected);
 
         setPlatforms(connectedPlatforms);
       } else {
