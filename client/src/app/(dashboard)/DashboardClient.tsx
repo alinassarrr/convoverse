@@ -58,7 +58,7 @@ export default function DashboardClient({
           </h1>
         </div>
         {/* content */}
-        <div className="flex-1 overflow-y-auto bg-background">{children}</div>
+        <div className="flex-1 bg-background overflow-hidden">{children}</div>
       </main>
     </div>
   );
