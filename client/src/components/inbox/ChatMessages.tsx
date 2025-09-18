@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SendIcon, SparklesIcon } from "lucide-react";
@@ -21,6 +21,7 @@ export function ChatMessages({
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+
   const chatDisplayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,16 +43,30 @@ export function ChatMessages({
     try {
       setLoading(true);
 
-      // Simple placeholder message from the conversation's last message
-      const placeholderMessage: Message = {
-        ts: conversation.last_message_ts,
-        text: conversation.lastMessage?.text || "No messages available",
-        sender: conversation.sender,
-        isFromUser: false,
-        status: "delivered",
-      };
+      // Fetch real messages from API
+      const messagesData = await ConversationsAPI.getMessages(
+        conversation.channel,
+        conversation.provider
+      );
 
-      setMessages([placeholderMessage]);
+      // Transform API response to Message format
+      const transformedMessages: Message[] = messagesData.map((msg: any) => ({
+        ts: msg.ts,
+        text: msg.text || "No text",
+        sender: {
+          id: msg.sender?.id || msg.user || "unknown",
+          name: msg.sender?.name || msg.senderName || "Unknown",
+          display_name: msg.sender?.display_name || msg.senderName || "Unknown",
+          avatar: msg.sender?.avatar,
+        },
+        isFromUser: msg.direction === "out",
+        status: "delivered",
+      }));
+
+      // Sort by timestamp (oldest first)
+      transformedMessages.sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts));
+
+      setMessages(transformedMessages);
     } catch (error) {
       console.error("Error loading messages:", error);
       setMessages([]);
@@ -161,7 +176,7 @@ export function ChatMessages({
       <div
         ref={chatDisplayRef}
         id="chat-display"
-        className="chat-messages flex-1 flex flex-col overflow-y-auto p-4 space-y-4"
+        className="chat-messages flex-1 flex flex-col overflow-y-auto p-4 space-y-4 hide-scrollbar"
       >
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -182,16 +197,35 @@ export function ChatMessages({
           messages.map((message, index) => (
             <div
               key={`${message.ts}-${index}`}
-              className={`flex ${
+              className={`flex items-start gap-2 ${
                 message.isFromUser ? "justify-end" : "justify-start"
               }`}
             >
+              {/* Avatar for received messages */}
+              {!message.isFromUser && (
+                <Avatar className="w-8 h-8 flex-shrink-0">
+                  <AvatarImage
+                    src={message.sender.avatar || undefined}
+                    alt={message.sender.display_name || message.sender.name}
+                  />
+                  <AvatarFallback className="text-xs">
+                    {(message.sender.display_name || message.sender.name || "U")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .substring(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+
               <div
                 className={`max-w-[70%] rounded-lg p-3 ${
                   message.isFromUser
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted border-l-4 border-l-emerald-500"
+                    : "border-l-4 border-l-emerald-500"
                 }`}
+                style={!message.isFromUser ? { backgroundColor: '#4E4E4E' } : undefined}
               >
                 {!message.isFromUser && (
                   <div className="flex items-center gap-2 mb-1">
@@ -207,14 +241,6 @@ export function ChatMessages({
                 {message.isFromUser && (
                   <div className="text-xs text-primary-foreground/70 mt-1 text-right">
                     {formatMessageTime(message.ts)}
-                    {message.status && (
-                      <span className="ml-1">
-                        {message.status === "sent" && "✓"}
-                        {message.status === "delivered" && "✓✓"}
-                        {message.status === "read" && "✓✓"}
-                        {message.status === "failed" && "✗"}
-                      </span>
-                    )}
                   </div>
                 )}
               </div>
@@ -236,6 +262,7 @@ export function ChatMessages({
                 : `#${conversation.name}`
             }...`}
             className="resize-none"
+            style={{ backgroundColor: '#3C3C3C' }}
             rows={1}
             disabled={sending}
           />
