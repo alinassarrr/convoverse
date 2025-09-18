@@ -223,9 +223,8 @@ export function ChatMessages({
                 className={`max-w-[70%] rounded-lg p-3 ${
                   message.isFromUser
                     ? "bg-primary text-primary-foreground"
-                    : "border-l-4 border-l-emerald-500"
+                    : "bg-muted border-l-4 border-l-emerald-500"
                 }`}
-                style={!message.isFromUser ? { backgroundColor: '#4E4E4E' } : undefined}
               >
                 {!message.isFromUser && (
                   <div className="flex items-center gap-2 mb-1">
@@ -262,7 +261,7 @@ export function ChatMessages({
                 : `#${conversation.name}`
             }...`}
             className="resize-none"
-            style={{ backgroundColor: '#3C3C3C' }}
+            style={{ backgroundColor: "#3C3C3C" }}
             rows={1}
             disabled={sending}
           />
