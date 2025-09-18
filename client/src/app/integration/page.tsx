@@ -52,14 +52,15 @@ export default function IntegrationsPage() {
   useEffect(() => {
     const slackStatus = searchParams.get("slack");
     if (slackStatus === "connected") {
-      toast.success("Slack connected successfully!", {
-        description: "You can now receive and manage Slack messages",
-        duration: 5000,
-      });
-      // update Slack status
+      //update stsatus
       setStatus((prev) => ({ ...prev, slack: true }));
 
       router.replace("/integration");
+
+      // Start automatic sync after short delay
+      setTimeout(() => {
+        syncSlackData();
+      }, 700);
     } else if (slackStatus === "error") {
       toast.error("Failed to connect Slack", {
         description:
@@ -92,6 +93,57 @@ export default function IntegrationsPage() {
       setLoading(false);
     }
   }
+
+  async function syncSlackData() {
+    try {
+      setSyncing(true);
+
+      toast.loading("Setting up your Slack workspace...", {
+        id: "slack-sync",
+        description: "Syncing channels and workspace information",
+      });
+
+      const response = await fetch("/api/integrations/slack/sync", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Slack workspace ready!", {
+          id: "slack-sync",
+          description: "Your channels and conversations are being loaded",
+          duration: 3000,
+        });
+
+        // delay for user to see success message
+        setTimeout(() => {
+          router.push("/inbox");
+        }, 1500);
+      } else {
+        throw new Error(data.message || "Sync failed");
+      }
+    } catch (error: any) {
+      toast.error("Sync failed", {
+        id: "slack-sync",
+        description:
+          error.message ||
+          "Failed to sync Slack data. You can try again later.",
+        duration: 5000,
+      });
+      console.error("Slack sync error:", error);
+      // Allow user to continue even if sync failed
+      setTimeout(() => {
+        router.push("/inbox");
+      }, 2000);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   async function toggle(provider: Provider) {
     const isConnecting = !status[provider];
     const providerName =
@@ -300,13 +352,17 @@ export default function IntegrationsPage() {
                         </h3>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                            status[provider.id]
+                            syncing && provider.id === "slack"
+                              ? "bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse"
+                              : status[provider.id]
                               ? "bg-green-500/20 text-green-400 border-green-500/30"
                               : "bg-muted/20 text-muted-foreground border-muted/30"
                           }`}
                         >
-                          {status[provider.id]
-                            ? "✓ Connected"
+                          {syncing && provider.id === "slack"
+                            ? "Syncing..."
+                            : status[provider.id]
+                            ? "Connected"
                             : "Not Connected"}
                         </span>
                       </div>
@@ -356,17 +412,19 @@ export default function IntegrationsPage() {
               <div className="flex justify-center">
                 <Button
                   onClick={handleContinue}
-                  disabled={loading || !hasConnectedPlatform}
+                  disabled={loading || syncing || !hasConnectedPlatform}
                   className={`px-12 py-4 rounded-xl font-semibold transition-all text-lg ${
-                    loading
-                      ? "bg-primary hover:from-primary/90 hover:to-secondary/90  shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                    loading || syncing
+                      ? "bg-muted/50 text-muted-foreground cursor-not-allowed"
                       : hasConnectedPlatform
-                      ? "bg-primary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                      ? "bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
                       : "bg-muted/50 text-muted-foreground cursor-not-allowed"
                   }`}
                 >
                   {loading
-                    ? "Loading Integrations..."
+                    ? "Loading integrations..."
+                    : syncing
+                    ? "Setting up workspace..."
                     : hasConnectedPlatform
                     ? "Continue to ConvoVerse"
                     : "Connect at least one platform to continue"}
