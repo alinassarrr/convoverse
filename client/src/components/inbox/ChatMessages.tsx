@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SendIcon, SparklesIcon } from "lucide-react";
 import { Conversation, Message } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
+import { socketService } from "@/lib/socket";
 
 interface ChatMessagesProps {
   conversation: Conversation | null;
@@ -27,6 +28,71 @@ export function ChatMessages({
   useEffect(() => {
     if (conversation) {
       loadConversationMessages();
+
+      // Join conversation room for real-time updates
+      socketService.joinConversation(conversation.channel);
+
+      // Listen for new messages in this conversation
+      const handleNewMessage = (data: any) => {
+        if (data.conversationId === conversation.channel) {
+          console.log('New message received:', data.message);
+          
+          // Transform the incoming message to match our Message type
+          const newMessage: Message = {
+            ts: data.message.ts,
+            text: data.message.text || "No text",
+            sender: {
+              id: data.message.user || "unknown",
+              name: data.message.senderName || "Unknown",
+              display_name: data.message.senderDisplayName || data.message.senderName || "Unknown",
+              avatar: data.message.senderAvatar,
+            },
+            isFromUser: data.message.direction === 'out',
+            status: "delivered",
+          };
+          
+          // Add the new message to the current messages
+          setMessages((prevMessages) => {
+            // Check if message already exists to avoid duplicates
+            const messageExists = prevMessages.some(msg => msg.ts === newMessage.ts);
+            if (messageExists) {
+              // Update existing message if sender info is now available
+              if (newMessage.sender.name !== "Unknown" && 
+                  prevMessages.find(msg => msg.ts === newMessage.ts)?.sender.name === "Unknown") {
+                return prevMessages.map(msg => 
+                  msg.ts === newMessage.ts ? { ...msg, sender: newMessage.sender } : msg
+                );
+              }
+              return prevMessages;
+            }
+            
+            // Insert message in chronological order
+            const updatedMessages = [...prevMessages, newMessage];
+            return updatedMessages.sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts));
+          });
+          
+          // If sender is "Unknown", set up a retry to refetch messages after a delay
+          if (newMessage.sender.name === "Unknown" || !newMessage.sender.display_name) {
+            console.log('Unknown sender detected, will retry fetching message details...');
+            setTimeout(async () => {
+              try {
+                console.log('Retrying to fetch updated message details...');
+                await loadConversationMessages();
+              } catch (error) {
+                console.error('Error refetching messages for sender info:', error);
+              }
+            }, 3000); // Retry after 3 seconds
+          }
+        }
+      };
+
+      socketService.onNewMessage(handleNewMessage);
+
+      // Cleanup when conversation changes
+      return () => {
+        socketService.leaveConversation(conversation.channel);
+        socketService.removeAllListeners("new_message");
+      };
     }
   }, [conversation]);
 
@@ -230,6 +296,11 @@ export function ChatMessages({
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold">
                       {message.sender.display_name || message.sender.name}
+                      {(message.sender.name === "Unknown" || !message.sender.display_name) && (
+                        <span className="ml-1 inline-flex items-center">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                        </span>
+                      )}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatMessageTime(message.ts)}
