@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Conversation } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
+import { socketService } from "@/lib/socket";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
@@ -25,6 +26,45 @@ export function ConversationsList({
 
   useEffect(() => {
     loadConversations();
+    
+    // Listen for conversation list updates
+    const handleConversationListUpdate = (data: any) => {
+      console.log('Conversation list update received:', data);
+      
+      if (data.operationType === 'insert') {
+        // New conversation added
+        setConversations(prevConversations => {
+          // Check if conversation already exists
+          const exists = prevConversations.some(conv => conv._id === data.conversation.id);
+          if (exists) return prevConversations;
+          
+          // Add new conversation to the top of the list
+          return [data.conversation, ...prevConversations];
+        });
+      } else if (data.operationType === 'update') {
+        // Existing conversation updated (like new message timestamp)
+        setConversations(prevConversations => {
+          return prevConversations.map(conv => {
+            if (conv.channel === data.conversation.channel) {
+              // Update the conversation with new data
+              return {
+                ...conv,
+                last_message_ts: data.conversation.last_message_ts,
+                // You might want to fetch the latest message here
+              };
+            }
+            return conv;
+          }).sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+        });
+      }
+    };
+    
+    socketService.onConversationListUpdate(handleConversationListUpdate);
+    
+    // Cleanup on unmount or platform change
+    return () => {
+      socketService.removeAllListeners('conversation_list_updated');
+    };
   }, [platform]);
 
   async function loadConversations() {
