@@ -2,11 +2,7 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  BotMessageSquare,
-  SendIcon,
-  SparklesIcon,
-} from "lucide-react";
+import { BotMessageSquare, SendIcon, SparklesIcon } from "lucide-react";
 import { PlatformsList } from "@/components/inbox/PlatformsList";
 import { useEffect, useState } from "react";
 
