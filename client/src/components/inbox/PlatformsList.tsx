@@ -74,17 +74,11 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col space-y-2 p-4 border-b h-fit">
-        <div className="h-10 bg-muted/20 rounded-md animate-pulse" />
-        <div className="h-10 bg-muted/20 rounded-md animate-pulse" />
-        <div className="h-10 bg-muted/20 rounded-md animate-pulse" />
-      </div>
-    );
+    return <div className="flex flex-col space-y-1 p-4 border-b h-1/4"></div>;
   }
 
   return (
-    <div className="flex flex-col space-y-2 p-4 border-b h-fit">
+    <div className="flex flex-col space-y-2 p-4 border-b h-fit overflow-y-auto">
       {/* All Messages - Always shown */}
       <Link
         href="/inbox"
