@@ -91,6 +91,139 @@ export default function IntegrationsPage() {
       setLoading(false);
     }
   }
+  async function toggle(provider: Provider) {
+    const isConnecting = !status[provider];
+    const providerName =
+      PROVIDERS.find((p) => p.id === provider)?.name || provider;
+
+    if (connecting) return; // prevent multiple simultaneous actions
+    setConnecting(provider);
+
+    try {
+      if (isConnecting) {
+        if (provider === "slack") {
+          // For Slack, get OAuth URL from backend then redirect
+          const loadingToast = toast.loading(
+            `Connecting to ${providerName}...`,
+            {
+              description: "Getting authorization URL...",
+            }
+          );
+
+          const response = await fetch(
+            `/api/integrations/${provider}/connect`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data = await response.json();
+          toast.dismiss(loadingToast);
+
+          if (response.ok && data.redirect) {
+            toast.success(`Redirecting to ${providerName}...`, {
+              description: "Complete the authorization process",
+              duration: 3000,
+            });
+            window.location.href = data.url;
+          } else {
+            throw new Error(
+              data.message || "Failed to get Slack authorization URL"
+            );
+          }
+        } else {
+          //fake integration for demo purposes
+          const loadingToast = toast.loading(
+            `Connecting to ${providerName}...`,
+            {
+              description: "Setting up your integration",
+            }
+          );
+
+          const response = await fetch(
+            `/api/integrations/${provider}/connect`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data = await response.json();
+          toast.dismiss(loadingToast);
+
+          if (response.ok) {
+            // Handle successful connection
+            setStatus((s) => ({ ...s, [provider]: true }));
+            toast.success(`${providerName} connected successfully!`, {
+              description: data.fake
+                ? "Demo integration active"
+                : "You can now receive and manage messages",
+              duration: 3000,
+            });
+          } else {
+            throw new Error(data.message || "Connection failed");
+          }
+        }
+      } else {
+        // disconnect
+        const response = await fetch(
+          `/api/integrations/${provider}/disconnect`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setLoading(true);
+          setStatus((s) => ({ ...s, [provider]: false }));
+          setLoading(false);
+          toast.success(`${providerName} disconnected`, {
+            description: "Integration has been removed",
+            duration: 2000,
+          });
+        } else {
+          throw new Error(data.message || "Disconnection failed");
+        }
+      }
+    } catch (error: any) {
+      toast.error(
+        `Failed to ${isConnecting ? "connect" : "disconnect"} ${providerName}`,
+        {
+          description:
+            error.message || "Something went wrong. Please try again.",
+          duration: 5000,
+        }
+      );
+    } finally {
+      setConnecting(null);
+    }
+  }
+
+  function handleContinue() {
+    if (hasConnectedPlatform) {
+      const connectedCount = Object.values(status).filter(Boolean).length;
+      toast.success("Setup complete!", {
+        description: `${connectedCount} platform${
+          connectedCount > 1 ? "s" : ""
+        } connected. Redirecting to your inbox...`,
+        duration: 2000,
+      });
+
+      setTimeout(() => {
+        router.replace("/inbox");
+      }, 500);
+    }
+  }
 
   return (
     <div className="min-h-screen relative">
