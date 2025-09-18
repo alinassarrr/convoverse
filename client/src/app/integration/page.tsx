@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -23,7 +23,7 @@ const PROVIDERS = [
     id: "whatsapp" as Provider,
     name: "WhatsApp",
     desc: "Connect WhatsApp Business to handle customer messages and support",
-    icon: <WhatsAppIcon className="w-8 h-8" />,
+    icon: <WhatsAppIcon />,
   },
   {
     id: "gmail" as Provider,
@@ -35,56 +35,60 @@ const PROVIDERS = [
 
 export default function IntegrationsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<StatusMap>({
     slack: false,
     whatsapp: false,
     gmail: false,
   });
-  //at least one platform connected
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState<string | null>(null);
+
+  //atleast 1 platform connected
   const hasConnectedPlatform = Object.values(status).some(Boolean);
 
-  function toggle(provider: Provider) {
-    const isConnecting = !status[provider];
-    const providerName =
-      PROVIDERS.find((p) => p.id === provider)?.name || provider;
-
-    if (isConnecting) {
-      const loadingToast = toast.loading(`Connecting to ${providerName}...`, {
-        description: "Setting up your integration",
+  //handle slack redirect
+  useEffect(() => {
+    const slackStatus = searchParams.get("slack");
+    if (slackStatus === "connected") {
+      toast.success("Slack connected successfully!", {
+        description: "You can now receive and manage Slack messages",
+        duration: 5000,
       });
+      // update Slack status
+      setStatus((prev) => ({ ...prev, slack: true }));
 
-      // Simulate connection process
-      setTimeout(() => {
-        setStatus((s) => ({ ...s, [provider]: true }));
-        toast.dismiss(loadingToast);
-        toast.success(`${providerName} connected successfully!`, {
-          description: "You can now receive and manage messages",
-          duration: 3000,
-        });
-      }, 2000);
-    } else {
-      // Disconnect
-      setStatus((s) => ({ ...s, [provider]: false }));
-      toast.success(`${providerName} disconnected`, {
-        description: "Integration has been removed",
-        duration: 2000,
+      router.replace("/integration");
+    } else if (slackStatus === "error") {
+      toast.error("Failed to connect Slack", {
+        description:
+          "There was an error connecting your Slack account. Please try again.",
+        duration: 5000,
       });
+      router.replace("/integration");
     }
-  }
+  }, [searchParams, router]);
 
-  function handleContinue() {
-    if (hasConnectedPlatform) {
-      const connectedCount = Object.values(status).filter(Boolean).length;
-      toast.success("Setup complete!", {
-        description: `${connectedCount} platform${
-          connectedCount > 1 ? "s" : ""
-        } connected. Redirecting to your inbox...`,
-        duration: 2000,
-      });
+  // On load fetch current integration status
+  useEffect(() => {
+    loadIntegrationStatus();
+  }, []);
 
-      setTimeout(() => {
-        router.replace("/inbox");
-      }, 1000);
+  async function loadIntegrationStatus() {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/integrations/status");
+      if (response.ok) {
+        const data = await response.json();
+        setStatus(data.status);
+        setLoading(false);
+      } else {
+        console.error("Failed to load integration status");
+      }
+    } catch (error) {
+      console.error("Error loading integration status:", error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -190,10 +194,12 @@ export default function IntegrationsPage() {
                     ) : (
                       <Button
                         onClick={() => toggle(provider.id)}
-                        className=" hover:from-primary/90 hover:to-secondary/90 text-white px-8 py-3 rounded-lg font-medium transition-all cursor-pointer hover:scale-105 shadow-lg hover:shadow-xl"
+                        disabled={connecting === provider.id}
+                        className="bg-primary hover:from-primary/90 hover:to-secondary/90 text-white px-8 py-3 rounded-lg font-medium transition-all cursor-pointer hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                       >
-                        {/* bg-gradient-to-r from-primary to-secondary */}
-                        Connect
+                        {connecting === provider.id
+                          ? "Connecting..."
+                          : "Connect"}
                       </Button>
                     )}
                   </div>
@@ -202,29 +208,7 @@ export default function IntegrationsPage() {
             </div>
 
             {/* Continue Button */}
-            <div className="mt-10 space-y-4">
-              {/* Progress Indicator */}
-              {/* <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="text-sm text-muted-foreground">
-                    {Object.values(status).filter(Boolean).length} of{" "}
-                    {PROVIDERS.length} platforms connected
-                  </div>
-                </div>
-                <div className="w-full bg-muted/30 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${
-                        (Object.values(status).filter(Boolean).length /
-                          PROVIDERS.length) *
-                        100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div> */}
-
+            <div className="mt-10">
               <div className="flex justify-center">
                 <Button
                   onClick={handleContinue}
