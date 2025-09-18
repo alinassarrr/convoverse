@@ -134,13 +134,15 @@ export function ConversationsList({
   }
 
   return (
-    <div className="flex flex-col overflow-y-scroll h-[70%]">
+    <div className="flex flex-col overflow-y-scroll h-[100%]">
       {conversations.map((conversation) => (
         <div
           key={conversation._id}
           onClick={() => onConversationSelect(conversation)}
           className={`p-4 border-b border-border cursor-pointer hover:bg-muted/30 transition-colors ${
-            selectedConversationId === conversation._id ? "bg-muted/50" : ""
+            selectedConversationId === conversation._id
+              ? "bg-muted/50 border-l-4 border-l-primary"
+              : ""
           }`}
         >
           <div className="flex gap-3 items-start">
