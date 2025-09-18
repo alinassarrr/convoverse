@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   BotMessageSquare,
-  MessageCircleMoreIcon,
   SendIcon,
-  Slack,
   SparklesIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { PlatformsList } from "@/components/inbox/PlatformsList";
 import { useEffect, useState } from "react";
 
 export default function InboxPage() {
@@ -21,29 +19,7 @@ export default function InboxPage() {
     <section className="flex h-full">
       <aside className="w-64 bg-background border-r border-border">
         <h2 className="p-4 pb-0">Sources</h2>
-        <div className="flex flex-col space-y-2 p-4 border-b h-fit">
-          <Link
-            href="/inbox"
-            className="bg-emerald-600 rounded-md p-1 pl-2 flex items-center gap-2 text-center"
-          >
-            <MessageCircleMoreIcon size={20} />
-            All Messages
-          </Link>
-          <Link
-            href="/inbox/slack"
-            className="bg-gray-500/20 rounded-md p-1 pl-2 flex items-center gap-2 text-center"
-          >
-            <Slack size={20} />
-            Slack
-          </Link>
-          <Link
-            href="/inbox/whatsapp"
-            className="bg-gray-500/20 rounded-md p-1 pl-2 flex items-center gap-2 text-center"
-          >
-            <MessageCircleMoreIcon size={20} />
-            WhatsApp
-          </Link>
-        </div>
+        <PlatformsList activePlatform="all" />
         <div className="flex flex-col overflow-y-scroll h-[70%] ">
           {/* Message card */}
           <div className="p-4 border-b border-t border-border">
