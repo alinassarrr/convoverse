@@ -43,6 +43,7 @@ export default function IntegrationsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   //atleast 1 platform connected
   const hasConnectedPlatform = Object.values(status).some(Boolean);
