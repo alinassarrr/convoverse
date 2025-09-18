@@ -316,13 +316,23 @@ export default function IntegrationsPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {status[provider.id] ? (
+                    {loading ? (
+                      <Button
+                        disabled={true}
+                        className="bg-muted/50 text-muted-foreground px-8 py-3 rounded-lg font-medium cursor-not-allowed"
+                      >
+                        Loading...
+                      </Button>
+                    ) : status[provider.id] ? (
                       <Button
                         onClick={() => toggle(provider.id)}
+                        disabled={connecting === provider.id}
                         variant="outline"
-                        className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 px-6 py-3 rounded-lg font-medium transition-all cursor-pointer hover:scale-105"
+                        className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 px-6 py-3 rounded-lg font-medium transition-all cursor-pointer hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                       >
-                        Disconnect
+                        {connecting === provider.id
+                          ? "Disconnecting..."
+                          : "Disconnect"}
                       </Button>
                     ) : (
                       <Button
@@ -345,14 +355,18 @@ export default function IntegrationsPage() {
               <div className="flex justify-center">
                 <Button
                   onClick={handleContinue}
-                  disabled={!hasConnectedPlatform}
+                  disabled={loading || !hasConnectedPlatform}
                   className={`px-12 py-4 rounded-xl font-semibold transition-all text-lg ${
-                    hasConnectedPlatform
+                    loading
                       ? "bg-primary hover:from-primary/90 hover:to-secondary/90  shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                      : hasConnectedPlatform
+                      ? "bg-primary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
                       : "bg-muted/50 text-muted-foreground cursor-not-allowed"
                   }`}
                 >
-                  {hasConnectedPlatform
+                  {loading
+                    ? "Loading Integrations..."
+                    : hasConnectedPlatform
                     ? "Continue to ConvoVerse"
                     : "Connect at least one platform to continue"}
                 </Button>
