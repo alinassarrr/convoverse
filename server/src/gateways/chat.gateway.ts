@@ -83,6 +83,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Emitted conversation update for ${conversationId}`);
   }
 
+  // Emit action update to conversation
+  emitActionUpdate(conversationId: string, action: any) {
+    this.server.to(`conversation_${conversationId}`).emit('action_updated', {
+      conversationId,
+      action,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Emitted action update for conversation ${conversationId}`);
+  }
+
+  // Emit summary update to conversation
+  emitSummaryUpdate(conversationId: string, summary: any) {
+    this.server.to(`conversation_${conversationId}`).emit('summary_updated', {
+      conversationId,
+      summary,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Emitted summary update for conversation ${conversationId}`);
+  }
+
   // Emit to all clients (for global updates)
   emitGlobalUpdate(event: string, data: any) {
     this.server.emit(event, {
