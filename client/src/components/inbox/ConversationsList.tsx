@@ -181,7 +181,12 @@ export function ConversationsList({
     );
   }
 
-  if (conversations.length === 0) {
+  // Filter conversations based on selected platform
+  const filteredConversations = platform === "all" 
+    ? conversations 
+    : conversations.filter(conv => conv.provider === platform);
+
+  if (filteredConversations.length === 0) {
     return (
       <div className="flex flex-col overflow-y-scroll h-[70%] p-4">
         <div className="text-center py-8">
@@ -196,7 +201,7 @@ export function ConversationsList({
 
   return (
     <div className="flex flex-col overflow-y-scroll h-[100%]">
-      {conversations.map((conversation) => (
+      {filteredConversations.map((conversation) => (
         <div
           key={conversation._id}
           onClick={() => onConversationSelect(conversation)}
