@@ -2,31 +2,29 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { SendIcon, SparklesIcon } from "lucide-react";
 import { Conversation, Message } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
 import { socketService } from "@/lib/socket";
+import { MessageInput } from "./MessageInput";
 
 interface ChatMessagesProps {
   conversation: Conversation | null;
-  onSendMessage?: (content: string) => void;
 }
 
 export function ChatMessages({
   conversation,
-  onSendMessage,
 }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
 
   const chatDisplayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (conversation) {
+      // Clear optimistic messages when switching conversations
+      setOptimisticMessages([]);
+      
       loadConversationMessages();
 
       // Join conversation room for real-time updates
@@ -35,51 +33,65 @@ export function ChatMessages({
       // Listen for new messages in this conversation
       const handleNewMessage = (data: any) => {
         if (data.conversationId === conversation.channel) {
-          console.log('New message received:', data.message);
-          
+          console.log("New message received:", data.message);
+
           // Transform the incoming message to match our Message type
           const newMessage: Message = {
             ts: data.message.ts,
-            text: data.message.text || "No text",
+            text: ConversationsAPI.cleanMessageText(data.message.text || "No text"),
             sender: {
               id: data.message.user || "unknown",
               name: data.message.senderName || "Unknown",
-              display_name: data.message.senderDisplayName || data.message.senderName || "Unknown",
+              display_name:
+                data.message.senderDisplayName ||
+                data.message.senderName ||
+                "Unknown",
               avatar: data.message.senderAvatar,
             },
-            isFromUser: data.message.direction === 'out',
+            // Use backend-provided direction field to determine message source
+            isFromUser: data.message.direction === "out",
             status: "delivered",
           };
-          
+
           // Add the new message to the current messages
           setMessages((prevMessages) => {
             // Check if message already exists to avoid duplicates
-            const messageExists = prevMessages.some(msg => msg.ts === newMessage.ts);
+            const messageExists = prevMessages.some(
+              (msg) => msg.ts === newMessage.ts
+            );
             if (messageExists) {
-              // Update existing message if sender info is now available
-              if (newMessage.sender.name !== "Unknown" && 
-                  prevMessages.find(msg => msg.ts === newMessage.ts)?.sender.name === "Unknown") {
-                return prevMessages.map(msg => 
-                  msg.ts === newMessage.ts ? { ...msg, sender: newMessage.sender } : msg
-                );
-              }
               return prevMessages;
             }
-            
+
+            // Remove any optimistic message that matches this real message
+            setOptimisticMessages(prev => prev.filter(opt => 
+              Math.abs(parseFloat(opt.ts) - parseFloat(newMessage.ts)) > 5 // 5 second tolerance
+            ));
+
             // Insert message in chronological order
             const updatedMessages = [...prevMessages, newMessage];
-            return updatedMessages.sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts));
+            return updatedMessages.sort(
+              (a, b) => parseFloat(a.ts) - parseFloat(b.ts)
+            );
           });
-          
+
           // If sender is "Unknown", set up a retry to refetch messages after a delay
-          if (newMessage.sender.name === "Unknown" || !newMessage.sender.display_name) {
-            console.log('Unknown sender detected, will retry fetching message details...');
+          if (
+            newMessage.sender.name === "Unknown" ||
+            !newMessage.sender.display_name
+          ) {
+            console.log(
+              "Unknown sender detected, will retry fetching message details..."
+            );
             setTimeout(async () => {
               try {
-                console.log('Retrying to fetch updated message details...');
+                console.log("Retrying to fetch updated message details...");
                 await loadConversationMessages();
               } catch (error) {
-                console.error('Error refetching messages for sender info:', error);
+                console.error(
+                  "Error refetching messages for sender info:",
+                  error
+                );
               }
             }, 3000); // Retry after 3 seconds
           }
@@ -118,7 +130,7 @@ export function ChatMessages({
       // Transform API response to Message format
       const transformedMessages: Message[] = messagesData.map((msg: any) => ({
         ts: msg.ts,
-        text: msg.text || "No text",
+        text: ConversationsAPI.cleanMessageText(msg.text || "No text"),
         sender: {
           id: msg.sender?.id || msg.user || "unknown",
           name: msg.sender?.name || msg.senderName || "Unknown",
@@ -141,47 +153,26 @@ export function ChatMessages({
     }
   }
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !conversation || sending) return;
-
-    try {
-      setSending(true);
-
-      // Create optimistic message
-      const optimisticMessage: Message = {
-        ts: (Date.now() / 1000).toString(),
-        text: newMessage,
-        sender: {
-          id: "user",
-          name: "You",
-          display_name: "You",
-        },
-        isFromUser: true,
-        status: "sent",
-      };
-
-      // Add to messages immediately for better UX
-      setMessages((prev) => [...prev, optimisticMessage]);
-      setNewMessage("");
-
-      // Call parent handler if provided
-      if (onSendMessage) {
-        onSendMessage(newMessage);
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Remove optimistic message on error
-      setMessages((prev) => prev.slice(0, -1));
-    } finally {
-      setSending(false);
-    }
+  const handleOptimisticMessage = (messageData: any) => {
+    const optimisticMessage: Message = {
+      ts: messageData.ts,
+      text: messageData.text,
+      sender: messageData.sender,
+      isFromUser: messageData.isFromUser,
+      status: "sending",
+    };
+    
+    setOptimisticMessages(prev => [...prev, optimisticMessage]);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleMessageSent = (messageData: any) => {
+    if (messageData.error) {
+      // Remove optimistic message on error
+      setOptimisticMessages(prev => 
+        prev.filter(msg => msg.ts !== messageData.optimisticId)
+      );
     }
+    // For successful sends, optimistic messages will be removed when real message arrives
   };
 
   const formatMessageTime = (ts: string) => {
@@ -250,7 +241,7 @@ export function ChatMessages({
               Loading messages...
             </div>
           </div>
-        ) : messages.length === 0 ? (
+        ) : [...messages, ...optimisticMessages].length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">No messages yet</p>
@@ -260,7 +251,9 @@ export function ChatMessages({
             </div>
           </div>
         ) : (
-          messages.map((message, index) => (
+          [...messages, ...optimisticMessages]
+            .sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts))
+            .map((message, index) => (
             <div
               key={`${message.ts}-${index}`}
               className={`flex items-start gap-2 ${
@@ -290,13 +283,18 @@ export function ChatMessages({
                   message.isFromUser
                     ? "bg-primary text-primary-foreground"
                     : "border-l-4 border-l-emerald-500 bg-[#4E4E4E]"
+                } ${
+                  message.status === "sending" 
+                    ? "opacity-70" 
+                    : ""
                 }`}
               >
                 {!message.isFromUser && (
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold">
                       {message.sender.display_name || message.sender.name}
-                      {(message.sender.name === "Unknown" || !message.sender.display_name) && (
+                      {(message.sender.name === "Unknown" ||
+                        !message.sender.display_name) && (
                         <span className="ml-1 inline-flex items-center">
                           <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
                         </span>
@@ -320,42 +318,11 @@ export function ChatMessages({
       </div>
 
       {/* Message Input */}
-      <div className="send-message p-4 border-t border-border flex items-end gap-2">
-        <div className="flex-1">
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={`Message ${
-              conversation.is_im
-                ? conversation.sender.display_name
-                : `#${conversation.name}`
-            }...`}
-            className="resize-none"
-            style={{ backgroundColor: "#3C3C3C" }}
-            rows={1}
-            disabled={sending}
-          />
-        </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="hover:bg-primary/10"
-          disabled={sending}
-        >
-          <SparklesIcon className="w-4 h-4" />
-        </Button>
-
-        <Button
-          onClick={handleSendMessage}
-          disabled={!newMessage.trim() || sending}
-          size="icon"
-          className="bg-primary hover:bg-primary/90"
-        >
-          <SendIcon className="w-4 h-4" />
-        </Button>
-      </div>
+      <MessageInput 
+        conversation={conversation}
+        onMessageSent={handleMessageSent}
+        onOptimisticMessage={handleOptimisticMessage}
+      />
     </section>
   );
 }
