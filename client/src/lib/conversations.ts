@@ -87,6 +87,23 @@ export class ConversationsAPI {
       : text;
   }
 
+  static cleanMessageText(text: string): string {
+    if (!text) return "";
+    
+    // Remove n8n automation signatures
+    // Pattern: _Automated with this <http://localhost:5678/workflow/...>_
+    const n8nPattern = /_Automated with this <http:\/\/localhost:5678\/workflow\/[^>]+>_/g;
+    let cleanedText = text.replace(n8nPattern, '');
+    
+    // Remove any trailing newlines or spaces left after cleaning
+    cleanedText = cleanedText.trim();
+    
+    // Remove extra whitespace and newlines
+    cleanedText = cleanedText.replace(/\n\s*\n/g, '\n').trim();
+    
+    return cleanedText;
+  }
+
   static async getLatestSummary(conversationId: string, provider: string = 'slack') {
     try {
       const url = `${API_BASE_URL}/summaries/${conversationId}/latest-summary?provider=${provider}`;
@@ -142,6 +159,40 @@ export class ConversationsAPI {
     } catch (error) {
       console.error('Failed to fetch conversation actions:', error);
       return [];
+    }
+  }
+
+  static async sendMessage(params: {
+    channel: string;
+    text: string;
+    isDM: boolean;
+  }) {
+    try {
+      const url = `${API_BASE_URL}/integrations/slack/send-message`;
+      
+      const payload = {
+        type: params.isDM ? 'user' : 'channel',
+        sendTo: params.channel,
+        messageText: params.text,
+      };
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      throw error;
     }
   }
 }
