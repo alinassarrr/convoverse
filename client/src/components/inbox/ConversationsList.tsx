@@ -34,27 +34,48 @@ export function ConversationsList({
       if (data.operationType === 'insert') {
         // New conversation added
         setConversations(prevConversations => {
-          // Check if conversation already exists
-          const exists = prevConversations.some(conv => conv._id === data.conversation.id);
+          // Check if conversation already exists (use both _id and id for compatibility)
+          const exists = prevConversations.some(conv => 
+            conv._id === data.conversation.id || 
+            conv._id === data.conversation._id ||
+            conv.channel === data.conversation.channel
+          );
           if (exists) return prevConversations;
           
-          // Add new conversation to the top of the list
-          return [data.conversation, ...prevConversations];
+          // Ensure the conversation has the correct _id field
+          const newConversation = {
+            ...data.conversation,
+            _id: data.conversation._id || data.conversation.id,
+          };
+          
+          // Add new conversation to the top of the list and sort
+          const updated = [newConversation, ...prevConversations]
+            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+          
+          return updated;
         });
       } else if (data.operationType === 'update') {
         // Existing conversation updated (like new message timestamp)
         setConversations(prevConversations => {
-          return prevConversations.map(conv => {
-            if (conv.channel === data.conversation.channel) {
-              // Update the conversation with new data
+          const updatedConversations = prevConversations.map(conv => {
+            if (conv.channel === data.conversation.channel && 
+                conv.provider === data.conversation.provider) {
+              // Update the conversation with complete new data including lastMessage
               return {
                 ...conv,
+                ...data.conversation,
+                _id: conv._id, // Preserve the original _id
                 last_message_ts: data.conversation.last_message_ts,
-                // You might want to fetch the latest message here
+                lastMessage: data.conversation.lastMessage || conv.lastMessage,
+                sender: data.conversation.sender || conv.sender,
               };
             }
             return conv;
-          }).sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+          });
+          
+          // Re-sort conversations by last_message_ts
+          return updatedConversations
+            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
         });
       }
     };
