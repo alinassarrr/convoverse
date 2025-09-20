@@ -13,7 +13,10 @@ import {
   IntegrationProvider,
 } from '../../schemas/integrations.schema';
 import { SlackTokenResponseDTO } from './dto/slack-token-response.dto';
+import { SendSlackMessageDto } from './dto/send-slack-message.dto';
 import { SlackConfig } from 'src/config/slack.config';
+import { N8nConfig } from 'src/config/n8n.config';
+import { MessageRecipientType } from 'src/types/message-recipient.enum';
 
 @Injectable()
 export class IntegrationsService {
@@ -22,6 +25,7 @@ export class IntegrationsService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly slackConfig: SlackConfig,
+    private readonly n8nConfig: N8nConfig,
   ) {}
 
   generateSlackAuthUrl(userId: string): string {
@@ -154,7 +158,7 @@ export class IntegrationsService {
       throw new BadRequestException('Slack access token not found');
 
     const n8nWebHook =
-      'http://localhost:5678/webhook-test/7b2d8bc6-9637-4e1a-9606-9d673fb19158';
+      'http://localhost:5678/webhook/7b2d8bc6-9637-4e1a-9606-9d673fb19158';
 
     try {
       const webhookPayload = {
@@ -183,6 +187,160 @@ export class IntegrationsService {
     } catch (error) {
       console.error('n8n webhook error:', error.message);
       throw new BadRequestException(`Failed to trigger n8n: ${error.message}`);
+    }
+  }
+
+  async getUserIntegrationsStatus(userId: string) {
+    const integrations = await this.getUserIntegrations(userId);
+
+    const status = {
+      slack: false,
+      whatsapp: false,
+      gmail: false,
+    };
+
+    integrations.forEach((integration) => {
+      if (integration.provider === IntegrationProvider.SLACK) {
+        status.slack = true;
+      } else if (integration.provider === IntegrationProvider.WHATSAPP) {
+        status.whatsapp = true;
+      } else if (integration.provider === IntegrationProvider.GMAIL) {
+        status.gmail = true;
+      }
+    });
+
+    return { status, integrations };
+  }
+
+  async connectFakeIntegration(userId: string, provider: 'whatsapp' | 'gmail') {
+    const providerEnum =
+      provider === 'whatsapp'
+        ? IntegrationProvider.WHATSAPP
+        : IntegrationProvider.GMAIL;
+
+    const integration = await this.IntegrationModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId), provider: providerEnum },
+      {
+        $set: {
+          accessToken: `fake_${provider}_token_${Date.now()}`,
+          tokenType: 'Bearer',
+          scope:
+            provider === 'whatsapp'
+              ? 'messages:read messages:write'
+              : 'gmail.readonly gmail.send',
+          metadata: {
+            connected: true,
+            connectedAt: new Date(),
+            fake: true,
+            provider: provider,
+          },
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    return {
+      success: true,
+      message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} connected successfully!`,
+      provider: provider,
+      integrationId: integration._id,
+      fake: true,
+    };
+  }
+
+  async disconnectIntegration(
+    userId: string,
+    provider: 'whatsapp' | 'gmail' | 'slack',
+  ) {
+    let providerEnum: IntegrationProvider;
+
+    switch (provider) {
+      case 'slack':
+        providerEnum = IntegrationProvider.SLACK;
+        break;
+      case 'whatsapp':
+        providerEnum = IntegrationProvider.WHATSAPP;
+        break;
+      case 'gmail':
+        providerEnum = IntegrationProvider.GMAIL;
+        break;
+    }
+
+    const result = await this.IntegrationModel.deleteOne({
+      userId: new Types.ObjectId(userId),
+      provider: providerEnum,
+    });
+
+    return {
+      success: true,
+      message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} disconnected successfully!`,
+      deleted: result.deletedCount > 0,
+    };
+  }
+
+  /**
+   * Send a message to Slack via n8n webhook
+   */
+  async sendSlackMessage(userId: string, messageDto: SendSlackMessageDto) {
+    // n8n webhook URL for sending messages
+    const n8nSendMessageWebhook =
+      'http://localhost:5678/webhook/ab785a89-ae51-4fc8-8af2-5732df7a318e';
+
+    try {
+      const webhookPayload = {
+        channelType: messageDto.type,
+        channelId: messageDto.sendTo,
+        textMessage: messageDto.messageText,
+      };
+
+      const response = await axios.post(n8nSendMessageWebhook, webhookPayload, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log(
+        'n8n webhook response:',
+        response.status,
+        response.statusText,
+      );
+
+      return {
+        success: true,
+        message: 'Message sent successfully to Slack via n8n',
+        channelType: messageDto.type as MessageRecipientType,
+        channelId: messageDto.sendTo,
+        textMessage: messageDto.messageText,
+        webhookResponse: response.data || 'OK',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Error sending message to n8n webhook:', {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        userId,
+        channelId: messageDto.sendTo,
+        webhookUrl: n8nSendMessageWebhook,
+      });
+
+      if (error.code === 'ECONNREFUSED') {
+        throw new BadRequestException(
+          'n8n service is not available. Please check if n8n is running on localhost:5678',
+        );
+      }
+
+      if (error.code === 'ENOTFOUND') {
+        throw new BadRequestException(
+          'Cannot reach n8n service. Please check the webhook URL.',
+        );
+      }
+
+      throw new BadRequestException(
+        `Failed to send message to n8n: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 }
