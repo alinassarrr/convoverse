@@ -7,7 +7,6 @@ import config from './config/config';
 import { UsersModule } from './modules/users/users.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
-// import { UnifiedInboxModule } from './modules/unified-inbox/unified-inbox.module';
 import { SummariesModule } from './modules/summaries/summaries.module';
 import { EmbeddingsModule } from './modules/embeddings/embeddings.module';
 import { AiAssistantModule } from './modules/ai-assistant/ai-assistant.module';
