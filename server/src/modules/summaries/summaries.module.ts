@@ -17,6 +17,7 @@ import { Action, ActionSchema } from 'src/schemas/action.schema';
 import { AiService } from './services/ai.service';
 import { RateLimiterService } from './services/rate-limiter.service';
 import { MessageProcessorService } from './services/message-processor.service';
+import { EmbeddingsModule } from '../embeddings/embeddings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MessageProcessorService } from './services/message-processor.service';
       { name: Embedding.name, schema: EmbeddingSchema },
       { name: Action.name, schema: ActionSchema },
     ]),
+    EmbeddingsModule,
   ],
   controllers: [SummariesController],
   providers: [
@@ -36,6 +38,6 @@ import { MessageProcessorService } from './services/message-processor.service';
     RateLimiterService,
     MessageProcessorService,
   ],
-  exports: [SummariesService],
+  exports: [SummariesService, AiService, RateLimiterService],
 })
 export class SummariesModule {}

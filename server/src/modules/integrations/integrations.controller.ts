@@ -1,11 +1,13 @@
 import {
   Controller,
   Get,
+  Post,
   UseGuards,
   Query,
   Req,
   Res,
   Param,
+  Body,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,9 +15,11 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { IntegrationsService } from './integrations.service';
+import { SendSlackMessageDto } from './dto/send-slack-message.dto';
 import { AuthGuard } from '../../guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 
@@ -44,15 +48,27 @@ export class IntegrationsController {
 
   @ApiOperation({ summary: 'Handle Slack OAuth callback' })
   @ApiResponse({
-    status: 200,
-    description: 'Slack account connected successfully',
+    status: 302,
+    description: 'Redirects to frontend integration page',
   })
   @Get('slack/callback')
-  handleSlackCallback(
+  async handleSlackCallback(
     @Query('code') code: string, // authorization code
     @Query('state') state: string, //the random string we sent
+    @Res() res: Response,
   ) {
-    return this.integrationsService.handleSlackCallback(code, state);
+    try {
+      const result = await this.integrationsService.handleSlackCallback(
+        code,
+        state,
+      );
+      // Redirect to frontend integration page with success message
+      return res.redirect('http://localhost:3001/integration?slack=connected');
+    } catch (error) {
+      console.error('Slack callback error:', error);
+      // Redirect to frontend integration page with error message
+      return res.redirect('http://localhost:3001/integration?slack=error');
+    }
   }
 
   @ApiOperation({ summary: 'Trigger Slack sync via n8n webhook' })
@@ -68,5 +84,136 @@ export class IntegrationsController {
   @Get('slack/sync/:userId')
   async syncSlack(@Param('userId') userId: string) {
     return this.integrationsService.handleSlackSync(userId);
+  }
+
+  @ApiOperation({ summary: 'Get user integrations' })
+  @ApiResponse({
+    status: 200,
+    description: 'User integrations retrieved successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Get('status')
+  async getUserIntegrations(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.getUserIntegrationsStatus(req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Connect WhatsApp integration' })
+  @ApiResponse({
+    status: 200,
+    description: 'WhatsApp integration connected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('whatsapp/connect')
+  async connectWhatsApp(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.connectFakeIntegration(
+      req.user.userId,
+      'whatsapp',
+    );
+  }
+
+  @ApiOperation({ summary: 'Disconnect WhatsApp integration' })
+  @ApiResponse({
+    status: 200,
+    description: 'WhatsApp integration disconnected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('whatsapp/disconnect')
+  async disconnectWhatsApp(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.disconnectIntegration(
+      req.user.userId,
+      'whatsapp',
+    );
+  }
+
+  @ApiOperation({ summary: 'Connect Gmail integration' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gmail integration connected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('gmail/connect')
+  async connectGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.connectFakeIntegration(
+      req.user.userId,
+      'gmail',
+    );
+  }
+
+  @ApiOperation({ summary: 'Disconnect Gmail integration' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gmail integration disconnected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('gmail/disconnect')
+  async disconnectGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.disconnectIntegration(
+      req.user.userId,
+      'gmail',
+    );
+  }
+
+  @ApiOperation({ summary: 'Disconnect Slack integration' })
+  @ApiResponse({
+    status: 200,
+    description: 'Slack integration disconnected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('slack/disconnect')
+  async disconnectSlack(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.disconnectIntegration(
+      req.user.userId,
+      'slack',
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Send message to Slack',
+    description: 'Send a message to a Slack channel or user via n8n webhook',
+  })
+  @ApiBody({ type: SendSlackMessageDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Message sent successfully to n8n webhook',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example: 'Message sent successfully to Slack via n8n',
+        },
+        channelType: {
+          type: 'string',
+          enum: ['user', 'channel'],
+          example: 'channel',
+        },
+        channelId: { type: 'string', example: 'C09DNQMMSPJ' },
+        textMessage: { type: 'string', example: 'Hello from ConvoVerse!' },
+        webhookResponse: { type: 'string', example: 'OK' },
+        timestamp: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data or n8n webhook failed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Slack integration not found or invalid token',
+  })
+  @Post('slack/send-message')
+  async sendSlackMessage(@Body() sendMessageDto: SendSlackMessageDto) {
+    return this.integrationsService.sendSlackMessage(
+      'test-user-id',
+      sendMessageDto,
+    );
   }
 }
