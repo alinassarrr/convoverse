@@ -10,4 +10,7 @@ export default () => ({
     clientSecret: process.env.SLACK_CLIENT_SECRET,
     redirectUri: process.env.SLACK_REDIRECT_URI,
   },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY,
+  },
 });
