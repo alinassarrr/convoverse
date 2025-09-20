@@ -19,6 +19,22 @@ export class ConversationsService {
 
   async listConversations(dto: ListLatestConversationDto) {
     try {
+      // Get authenticated user ID from integration
+      const integration = await this.integrationModel
+        .findOne({ provider: dto.provider || 'slack' })
+        .lean();
+
+      if (!integration) {
+        throw new BadRequestException('Integration not found');
+      }
+
+      let authedUserId: string;
+      if ((dto.provider || 'slack') === 'slack') {
+        authedUserId = integration.metadata?.authed_user?.id;
+      } else {
+        throw new BadRequestException('Provider not supported');
+      }
+
       return this.conversationModel
         .aggregate([
           { $match: dto.provider ? { provider: dto.provider } : {} },
@@ -50,12 +66,52 @@ export class ConversationsService {
             $unwind: { path: '$lastMessage', preserveNullAndEmptyArrays: true },
           },
 
+          // For DMs: Find the other participant (not the authenticated user)
+          {
+            $lookup: {
+              from: 'messages',
+              let: { channel: '$channel', provider: '$provider' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$channel', '$$channel'] },
+                        { $eq: ['$provider', '$$provider'] },
+                        { $ne: ['$user', authedUserId] }, // Not the authenticated user
+                      ],
+                    },
+                  },
+                },
+                { $limit: 1 },
+              ],
+              as: 'otherParticipantMessage',
+            },
+          },
+
+          // Get user info for the display (other participant for DMs, last sender for channels)
           {
             $lookup: {
               from: 'slack_users',
-              let: { user: '$lastMessage.user' },
+              let: {
+                displayUserId: {
+                  $cond: [
+                    { $eq: ['$is_im', true] },
+                    // For DMs: use other participant if available, otherwise last message sender
+                    {
+                      $cond: [
+                        { $gt: [{ $size: '$otherParticipantMessage' }, 0] },
+                        { $arrayElemAt: ['$otherParticipantMessage.user', 0] },
+                        '$lastMessage.user',
+                      ],
+                    },
+                    // For channels: use last message sender
+                    '$lastMessage.user',
+                  ],
+                },
+              },
               pipeline: [
-                { $match: { $expr: { $eq: ['$id', '$$user'] } } },
+                { $match: { $expr: { $eq: ['$id', '$$displayUserId'] } } },
                 { $limit: 1 },
               ],
               as: 'sender',
@@ -110,7 +166,7 @@ export class ConversationsService {
       return this.messageModel.aggregate([
         { $match: { channel, provider } },
         { $sort: { ts: -1 } },
-        { $limit: 20 },
+        { $limit: 30 },
 
         {
           $lookup: {
@@ -142,6 +198,12 @@ export class ConversationsService {
             ts: 1,
             direction: 1,
             senderName: 1,
+            sender: {
+              id: '$sender.id',
+              name: '$sender.name',
+              display_name: '$sender.profile.real_name',
+              avatar: '$sender.profile.image_48',
+            },
           },
         },
         // solution for duplicate messages due to multiple joins
@@ -152,6 +214,7 @@ export class ConversationsService {
             ts: { $first: '$ts' },
             direction: { $first: '$direction' },
             senderName: { $first: '$senderName' },
+            sender: { $first: '$sender' },
           },
         },
         { $sort: { ts: -1 } },

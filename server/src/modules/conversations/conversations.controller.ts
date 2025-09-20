@@ -28,8 +28,8 @@ import { ListLatestConversationDto } from './dto/list-latest-conversation.dto';
 type AuthedReq = Request & { user: { userId: string } };
 
 @ApiTags('Conversations')
-@ApiBearerAuth('JWT-auth')
-@UseGuards(AuthGuard)
+// @ApiBearerAuth('JWT-auth')
+// @UseGuards(AuthGuard)
 @Controller('conversations')
 export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}

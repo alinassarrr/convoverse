@@ -33,12 +33,21 @@ export class AuthService {
     if (usedEmail) throw new BadRequestException('Email already in use');
     // Todo: hash password
     const hashPassword = await bcrypt.hash(password, 10);
-    // Todo: create  user document and save in DB
-    await this.UserModel.create({
+    // Todo: create user document and save in DB
+    const newUser = await this.UserModel.create({
       fullname,
       email,
       password: hashPassword,
     });
+
+    // Generate tokens for automatic login after signup
+    const tokens = await this.generateUserToken(newUser._id as Types.ObjectId);
+
+    return {
+      ...tokens,
+      userId: newUser._id,
+      message: 'Account created successfully',
+    };
   }
 
   async login(credentials: LoginDTO) {
@@ -77,13 +86,13 @@ export class AuthService {
   }
 
   async generateUserToken(userId: mongoose.Types.ObjectId) {
-    const accessToken = this.jwtService.sign(
+    const access_token = this.jwtService.sign(
       { userId },
       { expiresIn: '30 days' },
     );
     const refreshToken = uuidv4();
     await this.storeRefreshToken(refreshToken, userId);
-    return { accessToken, refreshToken };
+    return { access_token, refreshToken };
   }
   async storeRefreshToken(token: string, userId: mongoose.Types.ObjectId) {
     // exp will be 3 days from moment created
