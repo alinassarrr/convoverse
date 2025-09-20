@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Conversation } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
+import { socketService } from "@/lib/socket";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
@@ -25,6 +26,66 @@ export function ConversationsList({
 
   useEffect(() => {
     loadConversations();
+    
+    // Listen for conversation list updates
+    const handleConversationListUpdate = (data: any) => {
+      console.log('Conversation list update received:', data);
+      
+      if (data.operationType === 'insert') {
+        // New conversation added
+        setConversations(prevConversations => {
+          // Check if conversation already exists (use both _id and id for compatibility)
+          const exists = prevConversations.some(conv => 
+            conv._id === data.conversation.id || 
+            conv._id === data.conversation._id ||
+            conv.channel === data.conversation.channel
+          );
+          if (exists) return prevConversations;
+          
+          // Ensure the conversation has the correct _id field
+          const newConversation = {
+            ...data.conversation,
+            _id: data.conversation._id || data.conversation.id,
+          };
+          
+          // Add new conversation to the top of the list and sort
+          const updated = [newConversation, ...prevConversations]
+            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+          
+          return updated;
+        });
+      } else if (data.operationType === 'update') {
+        // Existing conversation updated (like new message timestamp)
+        setConversations(prevConversations => {
+          const updatedConversations = prevConversations.map(conv => {
+            if (conv.channel === data.conversation.channel && 
+                conv.provider === data.conversation.provider) {
+              // Update the conversation with complete new data including lastMessage
+              return {
+                ...conv,
+                ...data.conversation,
+                _id: conv._id, // Preserve the original _id
+                last_message_ts: data.conversation.last_message_ts,
+                lastMessage: data.conversation.lastMessage || conv.lastMessage,
+                sender: data.conversation.sender || conv.sender,
+              };
+            }
+            return conv;
+          });
+          
+          // Re-sort conversations by last_message_ts
+          return updatedConversations
+            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+        });
+      }
+    };
+    
+    socketService.onConversationListUpdate(handleConversationListUpdate);
+    
+    // Cleanup on unmount or platform change
+    return () => {
+      socketService.removeAllListeners('conversation_list_updated');
+    };
   }, [platform]);
 
   async function loadConversations() {
@@ -120,7 +181,12 @@ export function ConversationsList({
     );
   }
 
-  if (conversations.length === 0) {
+  // Filter conversations based on selected platform
+  const filteredConversations = platform === "all" 
+    ? conversations 
+    : conversations.filter(conv => conv.provider === platform);
+
+  if (filteredConversations.length === 0) {
     return (
       <div className="flex flex-col overflow-y-scroll h-[70%] p-4">
         <div className="text-center py-8">
@@ -135,7 +201,7 @@ export function ConversationsList({
 
   return (
     <div className="flex flex-col overflow-y-scroll h-[100%]">
-      {conversations.map((conversation) => (
+      {filteredConversations.map((conversation) => (
         <div
           key={conversation._id}
           onClick={() => onConversationSelect(conversation)}

@@ -417,7 +417,7 @@ export default function IntegrationsPage() {
                     loading || syncing
                       ? "bg-muted/50 text-muted-foreground cursor-not-allowed"
                       : hasConnectedPlatform
-                      ? "bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                      ? "bg-primary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
                       : "bg-muted/50 text-muted-foreground cursor-not-allowed"
                   }`}
                 >

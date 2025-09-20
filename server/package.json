@@ -31,8 +31,11 @@
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/schedule": "^6.0.0",
     "@nestjs/swagger": "^11.2.0",
+    "@nestjs/websockets": "^11.1.6",
+    "@types/uuid": "^10.0.0",
     "ai": "^5.0.44",
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
@@ -44,6 +47,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

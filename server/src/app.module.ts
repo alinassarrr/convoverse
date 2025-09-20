@@ -10,7 +10,9 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 // import { UnifiedInboxModule } from './modules/unified-inbox/unified-inbox.module';
 import { SummariesModule } from './modules/summaries/summaries.module';
 import { EmbeddingsModule } from './modules/embeddings/embeddings.module';
+import { AiAssistantModule } from './modules/ai-assistant/ai-assistant.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { GatewaysModule } from './gateways/gateways.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     ConversationsModule,
     SummariesModule,
     EmbeddingsModule,
+    AiAssistantModule,
+    GatewaysModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [],

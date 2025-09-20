@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { MessageCircleMoreIcon } from "lucide-react";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -16,10 +15,16 @@ type Platform = {
 };
 
 interface PlatformsListProps {
-  activePlatform?: string;
+  activePlatform?: "all" | "slack" | "whatsapp" | "gmail";
+  conversationCounts?: Record<string, number>;
+  onPlatformSelect?: (platform: "all" | "slack" | "whatsapp" | "gmail") => void;
 }
 
-export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
+export function PlatformsList({ 
+  activePlatform = "all", 
+  conversationCounts = { all: 0, slack: 0, whatsapp: 0, gmail: 0 },
+  onPlatformSelect 
+}: PlatformsListProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,9 +85,9 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
   return (
     <div className="flex flex-col space-y-2 p-4 border-b h-fit overflow-y-auto">
       {/* All Messages - Always shown */}
-      <Link
-        href="/inbox"
-        className={`rounded-md p-1 pl-2 pr-2 flex items-center justify-between  font-medium transition-colors ${
+      <button
+        onClick={() => onPlatformSelect?.("all")}
+        className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
           activePlatform === "all"
             ? "bg-emerald-600"
             : "hover:bg-gray-600"
@@ -96,17 +101,17 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
           <span>All Messages</span>
         </div>
         <div className="bg-blue-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
-          24
+          {conversationCounts.all}
         </div>
-      </Link>
+      </button>
 
       {/* Connected Platforms */}
       {platforms.length > 0 ? (
         platforms.map((platform) => (
-          <Link
+          <button
             key={platform.id}
-            href={`/inbox/${platform.id}`}
-            className={`rounded-md p-1 pl-2 pr-2 flex items-center justify-between  font-medium transition-colors ${
+            onClick={() => onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")}
+            className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
               activePlatform === platform.id
                 ? "bg-emerald-600"
                 : "hover:bg-gray-600"
@@ -114,19 +119,15 @@ export function PlatformsList({ activePlatform = "all" }: PlatformsListProps) {
             style={activePlatform !== platform.id ? { backgroundColor: '#3C3C3C' } : undefined}
           >
             <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-lg  flex items-center justify-center">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center">
                 {platform.icon}
               </div>
               <span>{platform.name}</span>
             </div>
             <div className="bg-gray-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
-              {platform.id === "slack"
-                ? "10"
-                : platform.id === "whatsapp"
-                ? "8"
-                : "6"}
+              {conversationCounts[platform.id] || 0}
             </div>
-          </Link>
+          </button>
         ))
       ) : (
         <div className="text-center py-4">

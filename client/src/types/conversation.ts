@@ -67,7 +67,7 @@ export interface Summary {
   summaryText: string;
   messageIds: string[];
   lastMessageTs: string;
-  status: 'pending' | 'in_progress' | 'done' | 'failed';
+  status: "pending" | "in_progress" | "done" | "failed";
   createdAt: string;
   updatedAt: string;
 }
@@ -75,18 +75,25 @@ export interface Summary {
 export interface ActionAssignee {
   userId: string;
   userName: string;
-  role?: 'owner' | 'collaborator' | 'reviewer' | 'informed';
+  role?: "owner" | "collaborator" | "reviewer" | "informed";
   isCurrentUser: boolean;
 }
 
 export interface ActionItem {
   title: string;
   description?: string;
-  type: 'task' | 'meeting' | 'deadline' | 'reminder' | 'follow_up' | 'decision' | 'other';
-  importance: 'low' | 'medium' | 'high' | 'urgent';
+  type:
+    | "task"
+    | "meeting"
+    | "deadline"
+    | "reminder"
+    | "follow_up"
+    | "decision"
+    | "other";
+  importance: "low" | "medium" | "high" | "urgent";
   assignees: ActionAssignee[];
   due_date: string | null;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: "pending" | "in_progress" | "completed" | "cancelled";
   tags?: string[];
   context?: string;
   isAssignedToMe: boolean;
