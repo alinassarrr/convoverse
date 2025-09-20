@@ -91,7 +91,7 @@ export class AiAssistantService {
       const conversationHistory =
         this.conversationMemory.getConversationHistory(session.sessionId, 5);
 
-      // Check if this is a greeting or casual conversation (but not if we have context)
+      // If greeting/casual and no prior context, answer conversationally
       if (
         this.isGreetingOrCasual(request.query) &&
         conversationHistory.length === 1
@@ -109,29 +109,34 @@ export class AiAssistantService {
         return { ...response, sessionId: session.sessionId };
       }
 
-      // Enhance query with conversation context
+      // Enhance query with conversation memory
       const enhancedQuery = this.conversationMemory.buildEnhancedQuery(
         session.sessionId,
         request.query,
       );
 
-      // Create enhanced request with context
-      const enhancedRequest = { ...request, query: enhancedQuery };
+      // Analyze intent (rule-based)
+      const analysis = await this.analyzeQuery({
+        query: enhancedQuery,
+        userId: request.userId,
+      });
 
-      // Analyze the enhanced query to understand intent and context needs
-      const analysis = await this.analyzeQuery(enhancedRequest);
-      this.logger.debug('Query analysis:', analysis);
+      // *** EDIT #1: clearer debug log ***
+      this.logger.debug(`Query analysis: ${JSON.stringify(analysis)}`);
 
-      // Build search options based on analysis
-      const searchOptions = this.buildSearchOptions(enhancedRequest, analysis);
+      // Build search options from analysis
+      const searchOptions = this.buildSearchOptions(
+        { query: enhancedQuery, userId: request.userId },
+        analysis,
+      );
 
-      // Search for relevant content using enhanced query
+      // Retrieve relevant content
       let searchResults = await this.vectorSearchService.searchRelevantContent(
         enhancedQuery,
         searchOptions,
       );
 
-      // If no results with enhanced query, try original query
+      // Fallbacks to improve recall
       if (searchResults.length === 0 && enhancedQuery !== request.query) {
         this.logger.debug(
           'No results with enhanced query, trying original query',
@@ -142,7 +147,6 @@ export class AiAssistantService {
         );
       }
 
-      // If still no results, try with lower relevance threshold
       if (searchResults.length === 0) {
         this.logger.debug('No results, trying with lower relevance threshold');
         const lowerThresholdOptions = { ...searchOptions, minRelevance: 0.05 };
@@ -152,10 +156,9 @@ export class AiAssistantService {
         );
       }
 
-      // If still no results, try broader search without filters
       if (searchResults.length === 0) {
         this.logger.debug('No results, trying broader search without filters');
-        const broadOptions = {
+        const broadOptions: SearchOptions = {
           limit: searchOptions.limit,
           minRelevance: 0.05,
         };
@@ -174,23 +177,23 @@ export class AiAssistantService {
         return { ...emptyResponse, sessionId: session.sessionId };
       }
 
-      // Build comprehensive context
+      // Build RAG context
       const contextOptions = this.buildContextOptions(analysis);
       const context = await this.contextBuilderService.buildContext(
         searchResults,
-        request.query, // Use original query for context building
+        request.query, // use original query for summarization wording
         contextOptions,
       );
 
-      // Generate AI response with conversation history
+      // Generate final answer (RAG)
       const response = await this.generateResponse(
-        enhancedRequest,
+        { query: request.query, userId: request.userId },
         context,
         analysis,
         conversationHistory,
       );
 
-      // Add response to conversation memory
+      // Persist assistant turn
       this.conversationMemory.addAssistantTurn(
         session.sessionId,
         response.answer,
@@ -203,7 +206,7 @@ export class AiAssistantService {
       );
 
       return { ...response, sessionId: session.sessionId };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Error processing assistant query:', error);
       return {
         answer:
@@ -219,8 +222,7 @@ export class AiAssistantService {
     query: string;
     userId: string;
   }): Promise<QueryAnalysis> {
-    // For now, use rule-based analysis directly as it's more reliable
-    // Can re-enable AI analysis later if needed
+    // Rule-based analysis for reliability
     this.logger.debug('Using rule-based query analysis');
     return this.ruleBasedAnalysis(request);
   }
@@ -231,7 +233,6 @@ export class AiAssistantService {
   }): QueryAnalysis {
     const query = request.query.toLowerCase();
 
-    // Determine query type
     let queryType: QueryAnalysis['queryType'] = 'question';
     if (
       query.includes('when') ||
@@ -249,7 +250,6 @@ export class AiAssistantService {
       queryType = 'search';
     }
 
-    // Determine time frame
     let timeFrame: QueryAnalysis['timeFrame'] = { type: 'all' };
     if (
       query.includes('recent') ||
@@ -259,12 +259,11 @@ export class AiAssistantService {
     ) {
       timeFrame = {
         type: 'recent',
-        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last week
+        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         end: new Date(),
       };
     }
 
-    // Extract basic entities (simple word matching)
     const entities: string[] = [];
     const words = query.split(/\s+/);
     for (const word of words) {
@@ -275,19 +274,18 @@ export class AiAssistantService {
 
     return {
       intent: this.extractIntent(query),
-      entities: entities.slice(0, 5), // Limit to 5 entities
+      entities: entities.slice(0, 5),
       timeFrame,
       scope: {
         userId: request.userId,
-        global: true, // Global search across all conversations and providers
+        global: true,
       },
       queryType,
-      confidence: 0.6, // Medium confidence for rule-based analysis
+      confidence: 0.6,
     };
   }
 
   private extractIntent(query: string): string {
-    // Check for poll/options queries first
     if (query.includes('poll') || query.includes('option')) {
       return 'find_poll_options';
     }
@@ -330,7 +328,6 @@ export class AiAssistantService {
   }
 
   private validateAnalysis(parsed: any): QueryAnalysis {
-    // Validate and provide defaults for analysis structure
     return {
       intent: parsed.intent || 'general_query',
       entities: Array.isArray(parsed.entities)
@@ -344,18 +341,17 @@ export class AiAssistantService {
     };
   }
 
+  // *** EDIT #2: Always include 'message' (embeddings) in sourceTypes ***
   private buildSearchOptions(
     request: { query: string; userId: string },
     analysis: QueryAnalysis,
   ): SearchOptions {
     const options: SearchOptions = {
-      // No conversationId or provider - global search
       userId: request.userId,
       limit: ASSISTANT_CONFIG.DEFAULT_SEARCH_LIMIT,
       minRelevance: ASSISTANT_CONFIG.MIN_RELEVANCE_SCORE,
     };
 
-    // Apply time range from analysis
     if (analysis.timeFrame.start || analysis.timeFrame.end) {
       options.timeRange = {
         start: analysis.timeFrame.start,
@@ -363,14 +359,15 @@ export class AiAssistantService {
       };
     }
 
-    // Filter by source types based on intent
     if (analysis.intent.includes('action') || analysis.queryType === 'action') {
-      options.sourceTypes = ['action', 'summary'];
+      options.sourceTypes = ['message', 'action', 'summary'];
     } else if (
       analysis.intent.includes('summary') ||
       analysis.queryType === 'summary'
     ) {
-      options.sourceTypes = ['summary', 'message'];
+      options.sourceTypes = ['message', 'summary', 'action'];
+    } else {
+      options.sourceTypes = ['message', 'summary', 'action'];
     }
 
     return options;
@@ -394,41 +391,33 @@ export class AiAssistantService {
     conversationHistory?: any[],
   ): Promise<AssistantResponseDto> {
     try {
-      // Format context for the AI prompt
       const formattedContext =
         this.contextBuilderService.formatContextForPrompt(context);
 
-      // Build conversation context if available
       let conversationContext = '';
       if (conversationHistory && conversationHistory.length > 1) {
         conversationContext = `\n\nConversation History:\n${conversationHistory
-          .slice(-4) // Last 4 turns
+          .slice(-4)
           .map((turn) => `${turn.role.toUpperCase()}: ${turn.content}`)
           .join('\n')}\n`;
       }
 
-      // Build the response generation prompt
       const responsePrompt =
         ASSISTANT_PROMPTS.RESPONSE_GENERATION_PROMPT.replace(
           '{query}',
           request.query,
         ).replace('{sources}', formattedContext) + conversationContext;
 
-      // Generate response using AI service with conversation history
       const messages: { role: 'system' | 'user'; content: string }[] = [
         { role: 'system', content: ASSISTANT_PROMPTS.SYSTEM_PROMPT },
       ];
 
-      // Add recent conversation history if available (only user messages, since AI service only supports system/user)
       if (conversationHistory && conversationHistory.length > 1) {
         const userMessages = conversationHistory
           .filter((turn) => turn.role === 'user')
           .slice(-2);
         userMessages.forEach((turn) => {
-          messages.push({
-            role: 'user',
-            content: turn.content,
-          });
+          messages.push({ role: 'user', content: turn.content });
         });
       }
 
@@ -439,18 +428,15 @@ export class AiAssistantService {
         max_tokens: ASSISTANT_CONFIG.MAX_TOKENS,
       });
 
-      // SECURITY: Sanitize AI response to remove any sensitive information
       aiResponse = this.securityService.sanitizeResponse(aiResponse);
 
-      // Calculate confidence based on various factors
       const confidence = this.calculateConfidence(
         context,
         analysis,
         aiResponse,
       );
 
-      // Build sources array from context
-      const sources = context.items.map((item) => ({
+      const sources = context.items.map((item: any) => ({
         type: item.type,
         content:
           item.content.length > 200
@@ -464,7 +450,6 @@ export class AiAssistantService {
         },
       }));
 
-      // Generate reasoning
       const reasoning = this.generateReasoning(context, analysis, confidence);
 
       return {
@@ -484,30 +469,27 @@ export class AiAssistantService {
     analysis: QueryAnalysis,
     response: string,
   ): number {
-    let confidence = 0.5; // Base confidence
+    let confidence = 0.5;
 
-    // Boost confidence based on context quality
     if (context.items.length > 0) {
       const avgRelevance =
-        context.items.reduce((sum, item) => sum + item.relevance, 0) /
-        context.items.length;
+        context.items.reduce(
+          (sum: number, item: any) => sum + item.relevance,
+          0,
+        ) / context.items.length;
       confidence += avgRelevance * 0.3;
     }
 
-    // Boost confidence based on analysis confidence
     confidence += analysis.confidence * 0.2;
 
-    // Reduce confidence for very short responses
     if (response.length < 50) {
       confidence -= 0.2;
     }
 
-    // Boost confidence if we have action items and user asked about actions
     if (analysis.queryType === 'action' && context.actionItems.length > 0) {
       confidence += 0.1;
     }
 
-    // Ensure confidence stays within bounds
     return Math.min(Math.max(confidence, 0), 1);
   }
 
@@ -520,7 +502,9 @@ export class AiAssistantService {
 
     if (context.items.length > 0) {
       parts.push(
-        `Found ${context.items.length} relevant items across ${new Set(context.items.map((i) => i.type)).size} data sources`,
+        `Found ${context.items.length} relevant items across ${
+          new Set(context.items.map((i: any) => i.type)).size
+        } data sources`,
       );
     }
 
@@ -548,11 +532,9 @@ export class AiAssistantService {
   private isGreetingOrCasual(query: string): boolean {
     const lowerQuery = query.toLowerCase().trim();
 
-    // Only exact matches or very simple greetings - be much more restrictive
     const simpleGreetings = ['hi', 'hello', 'hey'];
     const casualQuestions = ['who are you', 'what can you do'];
 
-    // Must be exact match or very simple pattern
     const isSimpleGreeting = simpleGreetings.some(
       (greeting) =>
         lowerQuery === greeting ||
@@ -567,7 +549,6 @@ export class AiAssistantService {
         lowerQuery === question + '.',
     );
 
-    // If query contains specific keywords, it's NOT a greeting
     const contentKeywords = [
       'poll',
       'sync',
@@ -625,22 +606,20 @@ export class AiAssistantService {
           { role: 'user', content: conversationalPrompt },
         ],
         {
-          temperature: 0.7, // Higher temperature for more natural conversation
+          temperature: 0.7,
           max_tokens: 300,
         },
       );
 
-      // SECURITY: Sanitize conversational responses too
       response = this.securityService.sanitizeResponse(response);
 
       return {
         answer: response,
         sources: [],
-        confidence: 0.9, // High confidence for conversational responses
+        confidence: 0.9,
         reasoning: 'Conversational response - no data search required.',
       };
-    } catch (error) {
-      // Fallback response if AI generation fails
+    } catch {
       return {
         answer: `Hi there! 👋 I'm ConvoVerse Assistant, your friendly AI companion for managing conversations and tasks.
 
