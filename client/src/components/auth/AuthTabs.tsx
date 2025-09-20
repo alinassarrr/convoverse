@@ -5,29 +5,95 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export function AuthTabs() {
   const pathname = usePathname();
   const router = useRouter();
-  const isSignin = pathname.endsWith("/signin");
-  const mode: "signin" | "signup" = isSignin ? "signin" : "signup";
+  const [isLoading, setIsLoading] = useState(false);
+  const isLogin = pathname.endsWith("/login");
+  const mode: "login" | "signup" = isLogin ? "login" : "signup";
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // log the data
-    if (mode === "signup") {
-      const formData = new FormData(e.currentTarget);
-      console.log(Object.fromEntries(formData));
-      router.push("/inbox");
-    } else {
-      const formData = new FormData(e.currentTarget);
-      console.log(Object.fromEntries(formData));
-      router.push("/inbox");
+
+    if (isLoading) return;
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get("email"));
+    const password = String(formData.get("password"));
+    const fullname = String(formData.get("fullname"));
+
+    const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
+    const body =
+      mode === "login" ? { email, password } : { fullname, email, password };
+
+    const loadingToast = toast.loading(
+      mode === "login" ? "Signing you in..." : "Creating your account...",
+      {
+        description: "Please wait while we process your request",
+      }
+    );
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Authentication failed");
+      }
+
+      toast.success(
+        mode === "login" ? "Welcome back!" : "Accoun  t created successfully!",
+        {
+          description:
+            mode === "login"
+              ? "You've been signed in successfully"
+              : "Welcome to ConvoVerse! Let's get you started.",
+          duration: 3000,
+        }
+      );
+
+      setTimeout(() => {
+        setIsLoading(true);
+        if (mode === "login") {
+          router.push("/inbox");
+        } else {
+          router.push("/integration");
+        }
+      }, 500);
+    } catch (error: unknown) {
+      toast.error(mode === "login" ? "Sign in failed" : "Registration failed", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
+        duration: 5000,
+        action: {
+          label: "Try Again",
+          onClick: () => {
+            const form = document.querySelector("form") as HTMLFormElement;
+            if (form) form.requestSubmit();
+          },
+        },
+      });
+    } finally {
+      toast.dismiss(loadingToast);
+      setIsLoading(false);
     }
   }
 
   return (
-    <div className="w-full max-w-md bg-[#1f2937ac] rounded-2xl shadow-lg p-8">
+    <div className="w-full max-w-md bg-tab/70 rounded-2xl shadow-lg p-8">
       <div className="text-center mb-6">
         <div className="flex justify-center mb-2">
           <Image
@@ -45,9 +111,9 @@ export function AuthTabs() {
 
       <div className="flex mb-6">
         <Link
-          href="/signin"
+          href="/login"
           className={`flex-1 py-2 text-center rounded-l-lg ${
-            isSignin ? "bg-primary text-white" : "bg-gray-600 text-gray-200"
+            isLogin ? "bg-primary text-white" : "bg-gray-600 text-gray-200"
           }`}
         >
           Sign In
@@ -55,7 +121,7 @@ export function AuthTabs() {
         <Link
           href="/signup"
           className={`flex-1 py-2 text-center rounded-r-lg ${
-            !isSignin ? "bg-primary text-white" : "bg-gray-600 text-gray-200"
+            !isLogin ? "bg-primary text-white" : "bg-gray-600 text-gray-200"
           }`}
         >
           Sign Up
@@ -66,37 +132,51 @@ export function AuthTabs() {
       <form className="space-y-2" onSubmit={onSubmit}>
         <div className="text-center">
           <h2 className="text-xl font-semibold">
-            {isSignin ? "Welcome Back" : "Create Account"}
+            {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
           <p className="text-sm text-gray-400">
-            {isSignin ? "Sign in to your account" : "Sign up to get started"}
+            {isLogin ? "Sign in to your account" : "Sign up to get started"}
           </p>
         </div>
 
-        {!isSignin && (
+        {!isLogin && (
           <div>
-            <label className="text-sm text-white">Name</label>
+            <label htmlFor="fullname" className="text-sm text-white">
+              Full Name
+            </label>
             <Input
+              id="fullname"
+              name="fullname"
               type="text"
               placeholder="Enter your name"
               className="mt-1 bg-neutral-900 border-neutral-700"
               required
+              autoComplete="name"
             />
           </div>
         )}
 
         <div>
-          <label className="text-sm text-white">Email</label>
+          <label htmlFor="email" className="text-sm text-white">
+            Email
+          </label>
           <Input
+            id="email"
+            name="email"
             type="email"
             placeholder="Enter your email"
             className="mt-1 bg-neutral-900 border-neutral-700"
             required
+            autoComplete="email"
           />
         </div>
         <div>
-          <label className="text-sm text-white">Password</label>
+          <label htmlFor="password" className="text-sm text-white">
+            Password
+          </label>
           <Input
+            id="password"
+            name="password"
             type="password"
             placeholder="Enter your password"
             className="mt-1 bg-neutral-900 border-neutral-700"
@@ -106,9 +186,16 @@ export function AuthTabs() {
 
         <Button
           type="submit"
-          className="w-full bg-primary hover:bg-indigo-500 mt-6"
+          disabled={isLoading}
+          className="w-full bg-primary hover:bg-indigo-500 mt-6 text-lg font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSignin ? "Sign In" : "Sign Up"}
+          {isLoading
+            ? mode === "login"
+              ? "Signing In..."
+              : "Creating Account..."
+            : mode === "login"
+            ? "Sign In"
+            : "Sign Up"}
         </Button>
       </form>
     </div>
