@@ -48,13 +48,13 @@ export default function IntegrationsPage() {
   //atleast 1 platform connected
   const hasConnectedPlatform = Object.values(status).some(Boolean);
 
-  //handle slack redirect
+  //handle oauth redirects
   useEffect(() => {
+    // Handle Slack redirect
     const slackStatus = searchParams.get("slack");
     if (slackStatus === "connected") {
-      //update stsatus
+      //update status
       setStatus((prev) => ({ ...prev, slack: true }));
-
       router.replace("/integration");
 
       // Start automatic sync after short delay
@@ -65,6 +65,25 @@ export default function IntegrationsPage() {
       toast.error("Failed to connect Slack", {
         description:
           "There was an error connecting your Slack account. Please try again.",
+        duration: 5000,
+      });
+      router.replace("/integration");
+    }
+
+    // Handle Gmail redirect
+    const gmailStatus = searchParams.get("gmail");
+    if (gmailStatus === "connected") {
+      setStatus((prev) => ({ ...prev, gmail: true }));
+      router.replace("/integration");
+
+      // Start automatic Gmail sync after short delay
+      setTimeout(() => {
+        syncGmailData();
+      }, 700);
+    } else if (gmailStatus === "error") {
+      toast.error("Failed to connect Gmail", {
+        description:
+          "There was an error connecting your Gmail account. Please try again.",
         duration: 5000,
       });
       router.replace("/integration");
@@ -144,6 +163,56 @@ export default function IntegrationsPage() {
     }
   }
 
+  async function syncGmailData() {
+    try {
+      setSyncing(true);
+
+      toast.loading("Setting up your Gmail account...", {
+        id: "gmail-sync",
+        description: "Syncing emails and conversations",
+      });
+
+      const response = await fetch("/api/integrations/gmail/sync", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Gmail account ready!", {
+          id: "gmail-sync",
+          description: "Your emails and conversations are being loaded",
+          duration: 3000,
+        });
+
+        // delay for user to see success message
+        setTimeout(() => {
+          router.push("/inbox");
+        }, 1500);
+      } else {
+        throw new Error(data.message || "Sync failed");
+      }
+    } catch (error: any) {
+      toast.error("Gmail sync failed", {
+        id: "gmail-sync",
+        description:
+          error.message ||
+          "Failed to sync Gmail data. You can try again later.",
+        duration: 5000,
+      });
+      console.error("Gmail sync error:", error);
+      // Allow user to continue even if sync failed
+      setTimeout(() => {
+        router.push("/inbox");
+      }, 2000);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   async function toggle(provider: Provider) {
     const isConnecting = !status[provider];
     const providerName =
@@ -187,8 +256,41 @@ export default function IntegrationsPage() {
               data.message || "Failed to get Slack authorization URL"
             );
           }
+        } else if (provider === "gmail") {
+          // For Gmail, get OAuth URL from backend then redirect
+          const loadingToast = toast.loading(
+            `Connecting to ${providerName}...`,
+            {
+              description: "Getting authorization URL...",
+            }
+          );
+
+          const response = await fetch(
+            `/api/integrations/${provider}/connect`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data = await response.json();
+          toast.dismiss(loadingToast);
+
+          if (response.ok && data.redirect) {
+            toast.success(`Redirecting to ${providerName}...`, {
+              description: "Complete the authorization process",
+              duration: 3000,
+            });
+            window.location.href = data.url;
+          } else {
+            throw new Error(
+              data.message || "Failed to get Gmail authorization URL"
+            );
+          }
         } else {
-          //fake integration for demo purposes
+          //fake integration for demo purposes (WhatsApp)
           const loadingToast = toast.loading(
             `Connecting to ${providerName}...`,
             {
@@ -214,7 +316,7 @@ export default function IntegrationsPage() {
             setStatus((s) => ({ ...s, [provider]: true }));
             toast.success(`${providerName} connected successfully!`, {
               description: data.fake
-                ? "Demo integration active"
+                ? "Integration is now connceted"
                 : "You can now receive and manage messages",
               duration: 3000,
             });
@@ -248,12 +350,13 @@ export default function IntegrationsPage() {
           throw new Error(data.message || "Disconnection failed");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(
         `Failed to ${isConnecting ? "connect" : "disconnect"} ${providerName}`,
         {
           description:
-            error.message || "Something went wrong. Please try again.",
+            (error as Error).message ||
+            "Something went wrong. Please try again.",
           duration: 5000,
         }
       );
@@ -352,14 +455,16 @@ export default function IntegrationsPage() {
                         </h3>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                            syncing && provider.id === "slack"
+                            syncing &&
+                            (provider.id === "slack" || provider.id === "gmail")
                               ? "bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse"
                               : status[provider.id]
                               ? "bg-green-500/20 text-green-400 border-green-500/30"
                               : "bg-muted/20 text-muted-foreground border-muted/30"
                           }`}
                         >
-                          {syncing && provider.id === "slack"
+                          {syncing &&
+                          (provider.id === "slack" || provider.id === "gmail")
                             ? "Syncing..."
                             : status[provider.id]
                             ? "Connected"
