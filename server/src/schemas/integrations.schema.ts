@@ -3,6 +3,8 @@ import { Document, Types } from 'mongoose';
 
 export enum IntegrationProvider {
   SLACK = 'slack',
+  WHATSAPP = 'whatsapp',
+  GMAIL = 'gmail',
 }
 
 @Schema({ timestamps: true, collection: 'integrations' })

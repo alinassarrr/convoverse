@@ -24,42 +24,79 @@ export function ConversationsList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add custom CSS for scrollbar (same as AI assistant)
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .conversations-container {
+        scrollbar-width: thin;
+        scrollbar-color: #4B5563 #1F2937;
+      }
+      .conversations-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .conversations-container::-webkit-scrollbar-track {
+        background: #1F2937;
+        border-radius: 4px;
+      }
+      .conversations-container::-webkit-scrollbar-thumb {
+        background: #4B5563;
+        border-radius: 4px;
+      }
+      .conversations-container::-webkit-scrollbar-thumb:hover {
+        background: #6B7280;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     loadConversations();
-    
+
     // Listen for conversation list updates
     const handleConversationListUpdate = (data: any) => {
-      console.log('Conversation list update received:', data);
-      
-      if (data.operationType === 'insert') {
+      console.log("Conversation list update received:", data);
+
+      if (data.operationType === "insert") {
         // New conversation added
-        setConversations(prevConversations => {
+        setConversations((prevConversations) => {
           // Check if conversation already exists (use both _id and id for compatibility)
-          const exists = prevConversations.some(conv => 
-            conv._id === data.conversation.id || 
-            conv._id === data.conversation._id ||
-            conv.channel === data.conversation.channel
+          const exists = prevConversations.some(
+            (conv) =>
+              conv._id === data.conversation.id ||
+              conv._id === data.conversation._id ||
+              conv.channel === data.conversation.channel
           );
           if (exists) return prevConversations;
-          
+
           // Ensure the conversation has the correct _id field
           const newConversation = {
             ...data.conversation,
             _id: data.conversation._id || data.conversation.id,
           };
-          
+
           // Add new conversation to the top of the list and sort
-          const updated = [newConversation, ...prevConversations]
-            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
-          
+          const updated = [newConversation, ...prevConversations].sort(
+            (a, b) =>
+              parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts)
+          );
+
           return updated;
         });
-      } else if (data.operationType === 'update') {
+      } else if (data.operationType === "update") {
         // Existing conversation updated (like new message timestamp)
-        setConversations(prevConversations => {
-          const updatedConversations = prevConversations.map(conv => {
-            if (conv.channel === data.conversation.channel && 
-                conv.provider === data.conversation.provider) {
+        setConversations((prevConversations) => {
+          const updatedConversations = prevConversations.map((conv) => {
+            if (
+              conv.channel === data.conversation.channel &&
+              conv.provider === data.conversation.provider
+            ) {
               // Update the conversation with complete new data including lastMessage
               return {
                 ...conv,
@@ -72,19 +109,21 @@ export function ConversationsList({
             }
             return conv;
           });
-          
+
           // Re-sort conversations by last_message_ts
-          return updatedConversations
-            .sort((a, b) => parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts));
+          return updatedConversations.sort(
+            (a, b) =>
+              parseFloat(b.last_message_ts) - parseFloat(a.last_message_ts)
+          );
         });
       }
     };
-    
+
     socketService.onConversationListUpdate(handleConversationListUpdate);
-    
+
     // Cleanup on unmount or platform change
     return () => {
-      socketService.removeAllListeners('conversation_list_updated');
+      socketService.removeAllListeners("conversation_list_updated");
     };
   }, [platform]);
 
@@ -136,7 +175,11 @@ export function ConversationsList({
 
   if (loading) {
     return (
-      <div className="flex flex-col overflow-y-scroll h-[70%]">
+      <div className="flex flex-col overflow-y-auto h-[70%] conversations-container" style={{
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#4B5563 #1F2937',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         {/* Loading skeleton */}
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="p-4 border-b border-border animate-pulse">
@@ -155,7 +198,11 @@ export function ConversationsList({
 
   if (error) {
     return (
-      <div className="flex flex-col overflow-y-scroll h-[70%] p-4">
+      <div className="flex flex-col overflow-y-auto h-[70%] p-4 conversations-container" style={{
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#4B5563 #1F2937',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         <div className="text-center py-8">
           <p className="text-sm text-destructive mb-2">{error}</p>
           <div className="space-y-2">
@@ -182,9 +229,10 @@ export function ConversationsList({
   }
 
   // Filter conversations based on selected platform
-  const filteredConversations = platform === "all" 
-    ? conversations 
-    : conversations.filter(conv => conv.provider === platform);
+  const filteredConversations =
+    platform === "all"
+      ? conversations
+      : conversations.filter((conv) => conv.provider === platform);
 
   if (filteredConversations.length === 0) {
     return (

@@ -23,6 +23,34 @@ const formatMessageTime = (timestamp: Date) => {
 };
 
 export default function AssistantPage() {
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .messages-container {
+        scrollbar-width: thin;
+        scrollbar-color: #4B5563 #1F2937;
+      }
+      .messages-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .messages-container::-webkit-scrollbar-track {
+        background: #1F2937;
+        border-radius: 4px;
+      }
+      .messages-container::-webkit-scrollbar-thumb {
+        background: #4B5563;
+        border-radius: 4px;
+      }
+      .messages-container::-webkit-scrollbar-thumb:hover {
+        background: #6B7280;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const [messages, setMessages] = useState<AIMessage[]>([
     {
       id: "1",
@@ -146,14 +174,21 @@ export default function AssistantPage() {
 
   return (
     <div className="flex h-full bg-background">
-      <div className="flex-1 flex flex-col">
-        {/* Chat Area */}
+      <div className="flex-1 flex flex-col h-full">
+        {/* Chat Container with proper layout */}
         <div
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col h-full"
           style={{ backgroundColor: "#101720" }}
         >
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 hide-scrollbar">
+          {/* Messages Area - This is where scrolling happens */}
+          <div
+            className="flex-1 overflow-y-auto px-4 pt-4 pb-6 space-y-4 messages-container"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "#4B5563 #1F2937",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             {messages.length === 0 ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
@@ -258,9 +293,9 @@ export default function AssistantPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Message Input */}
+          {/* Message Input - Sticky at bottom */}
           <div
-            className="border-t border-border p-4"
+            className="border-t border-border p-4 flex-shrink-0"
             style={{ backgroundColor: "#101720" }}
           >
             <form onSubmit={handleSendMessage} className="flex gap-2">
