@@ -12,7 +12,7 @@ export class TriggerSummarizationDto {
 
   @ApiProperty({
     example: 'slack',
-    description: 'The provider of the conversation (e.g., slack, whatsapp)',
+    description: 'The provider of the conversation (e.g., slack)',
   })
   @IsString()
   @IsNotEmpty()

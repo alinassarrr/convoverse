@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 @Schema({ collection: 'messages', timestamps: false })
 export class Message extends Document {
   @Prop({ required: true })
-  provider: string; // 'slack', 'whatsapp', 'gmail'
+  provider: string; // 'slack', 'gmail'
 
   @Prop({ required: true })
   ts: string; // Slack timestamp / message ID
