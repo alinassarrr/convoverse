@@ -10,6 +10,11 @@ export default () => ({
     clientSecret: process.env.SLACK_CLIENT_SECRET,
     redirectUri: process.env.SLACK_REDIRECT_URI,
   },
+  gmail: {
+    clientId: process.env.GMAIL_CLIENT_ID,
+    clientSecret: process.env.GMAIL_CLIENT_SECRET,
+    redirectUri: process.env.GMAIL_REDIRECT_URI,
+  },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY,
   },

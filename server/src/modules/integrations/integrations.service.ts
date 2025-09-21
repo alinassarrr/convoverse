@@ -15,6 +15,7 @@ import {
 import { SlackTokenResponseDTO } from './dto/slack-token-response.dto';
 import { SendSlackMessageDto } from './dto/send-slack-message.dto';
 import { SlackConfig } from 'src/config/slack.config';
+import { GmailConfig } from 'src/config/gmail.config';
 import { N8nConfig } from 'src/config/n8n.config';
 import { MessageRecipientType } from 'src/types/message-recipient.enum';
 
@@ -25,8 +26,48 @@ export class IntegrationsService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly slackConfig: SlackConfig,
+    private readonly gmailConfig: GmailConfig,
     private readonly n8nConfig: N8nConfig,
   ) {}
+
+  generateGmailAuthUrl(userId: string): string {
+    const secret = this.configService.get<string>('jwt.secret');
+    console.log('Generating Gmail state token for userId:', userId);
+
+    const payload = { userId };
+    const state = this.jwtService.sign(payload, { secret, expiresIn: '1h' });
+
+    const clientId = this.gmailConfig.clientId;
+    const redirectUri = this.gmailConfig.redirectUri;
+
+    if (!clientId || !redirectUri) {
+      throw new Error('Gmail configuration missing');
+    }
+
+    const scopes = [
+      'https://www.googleapis.com/auth/gmail.labels',
+      'https://www.googleapis.com/auth/gmail.addons.current.action.compose',
+      'https://www.googleapis.com/auth/gmail.addons.current.message.action',
+      'https://mail.google.com/',
+      'https://www.googleapis.com/auth/gmail.modify',
+      'https://www.googleapis.com/auth/gmail.compose',
+    ].join(' ');
+
+    const baseUrl = 'https://accounts.google.com/o/oauth2/auth';
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: 'http://localhost:3000/integrations/rest/oauth2-credential/callback',
+      scope: scopes,
+      response_type: 'code',
+      access_type: 'offline',
+      prompt: 'consent',
+      state,
+    });
+    
+    const authUrl = `${baseUrl}?${params.toString()}`;
+
+    return authUrl;
+  }
 
   generateSlackAuthUrl(userId: string): string {
     const secret = this.configService.get<string>('jwt.secret');
@@ -135,6 +176,112 @@ export class IntegrationsService {
       user: authed_user || {},
     };
   }
+
+  async handleGmailCallback(code: string, state: string) {
+    // Verify token (state)
+    let decoded: { userId?: string };
+    try {
+      const secret = this.configService.get<string>('jwt.secret');
+      console.log(
+        'Verifying Gmail state token:',
+        state.substring(0, 50) + '...',
+      );
+
+      decoded = this.jwtService.verify(state, { secret });
+      console.log(
+        'Decoded Gmail JWT payload:',
+        JSON.stringify(decoded, null, 2),
+      );
+
+      if (!decoded?.userId) {
+        console.error('Gmail JWT payload missing userId:', decoded);
+        throw new UnauthorizedException('Invalid state token');
+      }
+      console.log('Gmail JWT verification successful, userId:', decoded.userId);
+    } catch (error) {
+      console.error('Gmail JWT verification error:', error.message);
+      throw new UnauthorizedException('Invalid or expired state token');
+    }
+
+    const clientId = this.gmailConfig.clientId;
+    const clientSecret = this.gmailConfig.clientSecret;
+    const redirectUri = this.gmailConfig.redirectUri;
+
+    if (!clientId || !clientSecret || !redirectUri) {
+      throw new BadRequestException('Gmail OAuth configuration missing');
+    }
+
+    // Exchange code for access token
+    try {
+      const response = await axios.post(
+        'https://oauth2.googleapis.com/token',
+        {
+          code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      const { access_token, refresh_token, expires_in, scope, token_type } =
+        response.data;
+
+      // Get user profile information
+      const profileResponse = await axios.get(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      );
+
+      const userProfile = profileResponse.data;
+
+      // Store in database
+      const userId = new Types.ObjectId(decoded.userId);
+      const expiresAt = new Date(Date.now() + expires_in * 1000);
+
+      const integration = await this.IntegrationModel.findOneAndUpdate(
+        { userId, provider: IntegrationProvider.GMAIL },
+        {
+          $set: {
+            accessToken: access_token,
+            refreshToken: refresh_token,
+            tokenType: token_type || 'Bearer',
+            scope,
+            expiresAt,
+            metadata: {
+              userProfile,
+              connectedAt: new Date(),
+            },
+          },
+        },
+        { upsert: true, new: true },
+      );
+
+      return {
+        message: 'Gmail account connected successfully!',
+        integrationId: integration._id,
+        userProfile,
+      };
+    } catch (error) {
+      console.error(
+        'Gmail token exchange error:',
+        error.response?.data || error.message,
+      );
+      throw new BadRequestException(
+        'Failed to exchange code for Gmail access token: ' +
+          (error.response?.data?.error_description || error.message),
+      );
+    }
+  }
   async getSlackIntegration(userId: string) {
     return this.IntegrationModel.findOne({
       userId: new Types.ObjectId(userId),
@@ -187,6 +334,31 @@ export class IntegrationsService {
     } catch (error) {
       console.error('n8n webhook error:', error.message);
       throw new BadRequestException(`Failed to trigger n8n: ${error.message}`);
+    }
+  }
+
+  async handleGmailSync() {
+    const n8nGmailWebHook =
+      'http://localhost:5678/webhook/4ad0cbb1-1db7-4323-940d-0bf77430cdc2';
+
+    try {
+      const webhookPayload = {
+        provider: 'gmail',
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log('Sending Gmail sync to n8n webhook');
+      await axios.post(n8nGmailWebHook, webhookPayload);
+
+      return {
+        success: true,
+        message: 'Gmail sync webhook triggered successfully',
+      };
+    } catch (error) {
+      console.error('Gmail sync webhook error:', error.message);
+      throw new BadRequestException(
+        `Failed to trigger Gmail sync: ${error.message}`,
+      );
     }
   }
 

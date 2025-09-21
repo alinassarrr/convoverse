@@ -8,6 +8,13 @@ import { socketService } from "@/lib/socket";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
+import {
+  parseGmailUser,
+  getInitials,
+  formatEmailSubject,
+  getEmailColor,
+} from "@/lib/gmail-utils";
+import { Mail, MailOpen } from "lucide-react";
 
 interface ConversationsListProps {
   platform?: "slack" | "whatsapp" | "gmail" | "all";
@@ -26,7 +33,7 @@ export function ConversationsList({
 
   // Add custom CSS for scrollbar (same as AI assistant)
   useEffect(() => {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .conversations-container {
         scrollbar-width: thin;
@@ -48,7 +55,7 @@ export function ConversationsList({
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       if (document.head.contains(style)) {
         document.head.removeChild(style);
@@ -154,7 +161,7 @@ export function ConversationsList({
       case "whatsapp":
         return <WhatsAppIcon className="w-4 h-4 text-white" />;
       case "gmail":
-        return <GmailIcon className="w-4 h-4 text-white" />;
+        return <GmailIcon className="w-4 h-4" />; // Use default Gmail colors
       default:
         return null;
     }
@@ -167,19 +174,58 @@ export function ConversationsList({
       case "whatsapp":
         return "bg-[#25D366]";
       case "gmail":
-        return "bg-[#EA4335]";
+        return "bg-transparent"; // No background for Gmail
       default:
         return "bg-gray-500";
     }
   };
 
+  const getConversationDisplayInfo = (conversation: Conversation) => {
+    if (conversation.provider === "gmail") {
+      // Gmail display logic
+      const parsedUser = conversation.user ? parseGmailUser(conversation.user) : null;
+      const displayName = parsedUser?.displayName || conversation.name || "Unknown";
+      const email = parsedUser?.email || "";
+      const initials = getInitials(displayName);
+      const avatarColor = getEmailColor(email);
+      
+      return {
+        displayName,
+        email,
+        subject: conversation.name || "No Subject",
+        initials,
+        isEmail: true,
+        avatarColor,
+      };
+    }
+    
+    // Slack/WhatsApp display logic (unchanged)
+    const displayName = conversation.is_im
+      ? conversation.sender?.display_name ||
+        conversation.sender?.name ||
+        "Unknown"
+      : `# ${conversation.name}`;
+
+    return {
+      displayName,
+      email: "",
+      subject: conversation.name || "",
+      initials: getInitials(displayName),
+      isEmail: false,
+      avatarColor: "#6B7280",
+    };
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col overflow-y-auto h-[70%] conversations-container" style={{
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#4B5563 #1F2937',
-        WebkitOverflowScrolling: 'touch'
-      }}>
+      <div
+        className="flex flex-col overflow-y-auto h-[70%] conversations-container"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#4B5563 #1F2937",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {/* Loading skeleton */}
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="p-4 border-b border-border animate-pulse">
@@ -198,11 +244,14 @@ export function ConversationsList({
 
   if (error) {
     return (
-      <div className="flex flex-col overflow-y-auto h-[70%] p-4 conversations-container" style={{
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#4B5563 #1F2937',
-        WebkitOverflowScrolling: 'touch'
-      }}>
+      <div
+        className="flex flex-col overflow-y-auto h-[70%] p-4 conversations-container"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#4B5563 #1F2937",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         <div className="text-center py-8">
           <p className="text-sm text-destructive mb-2">{error}</p>
           <div className="space-y-2">
@@ -236,7 +285,14 @@ export function ConversationsList({
 
   if (filteredConversations.length === 0) {
     return (
-      <div className="flex flex-col overflow-y-scroll h-[70%] p-4">
+      <div
+        className="flex flex-col overflow-y-auto h-[70%] p-4 conversations-container"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#4B5563 #1F2937",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         <div className="text-center py-8">
           <p className="text-sm text-muted-foreground">
             No conversations found
@@ -248,75 +304,115 @@ export function ConversationsList({
   }
 
   return (
-    <div className="flex flex-col overflow-y-scroll h-[100%]">
-      {filteredConversations.map((conversation) => (
-        <div
-          key={conversation._id}
-          onClick={() => onConversationSelect(conversation)}
-          className={`p-4 border-b border-border cursor-pointer hover:bg-muted/30 transition-colors ${
-            selectedConversationId === conversation._id
-              ? "bg-muted/50 border-l-4 border-l-primary"
-              : ""
-          }`}
-        >
-          <div className="flex gap-3 items-start">
-            <div className="relative">
-              <Avatar className="w-10 h-10">
-                <AvatarImage
-                  src={conversation.is_im ? conversation.sender.avatar : ""}
-                  alt={
-                    conversation.is_im
-                      ? conversation.sender.display_name
-                      : conversation.name
-                  }
-                />
-                {!conversation.is_im && (
-                  <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
-                    {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+    <div
+      className="flex flex-col overflow-y-auto h-[100%] conversations-container"
+      style={{
+        scrollbarWidth: "thin",
+        scrollbarColor: "#4B5563 #1F2937",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
+      {filteredConversations.map((conversation) => {
+        // Debug: Log Gmail conversations to see what we get from DB
+        if (conversation.provider === "gmail") {
+          console.log("🔍 Gmail Conversation from DB:", {
+            _id: conversation._id,
+            user: conversation.user,
+            name: conversation.name,
+            provider: conversation.provider,
+            is_im: conversation.is_im,
+            sender: conversation.sender,
+            lastMessage: conversation.lastMessage,
+            fullObject: conversation,
+          });
+        }
+
+        const displayInfo = getConversationDisplayInfo(conversation);
+
+        return (
+          <div
+            key={conversation._id}
+            onClick={() => onConversationSelect(conversation)}
+            className={`p-4 border-b border-border cursor-pointer hover:bg-muted/30 transition-colors ${
+              selectedConversationId === conversation._id
+                ? "bg-muted/50 border-l-4 border-l-primary"
+                : ""
+            }`}
+          >
+            <div className="flex gap-3 items-start">
+              <div className="relative">
+                {conversation.provider === "gmail" ? (
+                  // Gmail: Color-coded avatar with initials
+                  <div 
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white"
+                    style={{ backgroundColor: displayInfo.avatarColor }}
+                  >
+                    {displayInfo.initials}
                   </div>
+                ) : (
+                  // Slack/WhatsApp: Standard avatar
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage
+                      src={conversation.is_im ? conversation.sender?.avatar : ""}
+                      alt={
+                        conversation.is_im
+                          ? conversation.sender?.display_name
+                          : conversation.name
+                      }
+                    />
+                    {!conversation.is_im && (
+                      <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
+                        {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+                      </div>
+                    )}
+                  </Avatar>
                 )}
-              </Avatar>
-              {/* Platform indicator */}
-              <div
-                className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${getPlatformColor(
-                  conversation.provider
-                )} flex items-center justify-center`}
-              >
-                {getPlatformIcon(conversation.provider)}
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="font-semibold text-sm truncate max-w-[70%]">
-                  {conversation.is_im
-                    ? conversation.sender.display_name
-                    : `# ${conversation.name}`}
-                </h3>
-                <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                  {ConversationsAPI.formatTimestamp(
-                    conversation.last_message_ts
-                  )}
-                </span>
+                {/* Platform indicator */}
+                <div
+                  className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${getPlatformColor(
+                    conversation.provider
+                  )} flex items-center justify-center`}
+                >
+                  {getPlatformIcon(conversation.provider)}
+                </div>
               </div>
 
-              <p className="text-sm text-muted-foreground ">
-                {conversation.lastMessage?.text
-                  ? ConversationsAPI.truncateMessage(
-                      conversation.lastMessage.text
-                    )
-                  : "No messages"}
-              </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">
+                      {displayInfo.displayName}
+                    </h3>
+                    {conversation.provider === "gmail" && displayInfo.email && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {displayInfo.email}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                    {ConversationsAPI.formatTimestamp(
+                      conversation.last_message_ts
+                    )}
+                  </span>
+                </div>
 
-              {!conversation.is_im && conversation.sender && (
-                <p className="text-xs text-muted-foreground/70 truncate mt-1">
-                  {conversation.sender.display_name}
+                <p className="text-sm text-muted-foreground truncate">
+                  {conversation.lastMessage?.text
+                    ? ConversationsAPI.truncateMessage(
+                        conversation.lastMessage.text
+                      )
+                    : "No messages"}
                 </p>
-              )}
+                {!conversation.is_im && conversation.sender && (
+                  <p className="text-xs text-muted-foreground/70 truncate mt-1">
+                    {conversation.sender.display_name}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

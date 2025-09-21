@@ -46,6 +46,15 @@ export class IntegrationsController {
     return this.integrationsService.generateSlackAuthUrl(req.user.userId);
   }
 
+  @ApiOperation({ summary: 'Connect Gmail account' })
+  @ApiResponse({ status: 200, description: 'Returns Gmail OAuth URL' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Get('gmail/connect')
+  redirectToGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.generateGmailAuthUrl(req.user.userId);
+  }
+
   @ApiOperation({ summary: 'Handle Slack OAuth callback' })
   @ApiResponse({
     status: 302,
@@ -68,6 +77,33 @@ export class IntegrationsController {
       console.error('Slack callback error:', error);
       // Redirect to frontend integration page with error message
       return res.redirect('http://localhost:3001/integration?slack=error');
+    }
+  }
+
+  @ApiOperation({ summary: 'Handle Gmail OAuth callback' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirects to frontend integration page',
+  })
+  @Get('gmail/callback')
+  async handleGmailCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Process OAuth callback to exchange code for tokens
+      await this.integrationsService.handleGmailCallback(code, state);
+
+      // Trigger Gmail sync webhook
+      await this.integrationsService.handleGmailSync();
+
+      // Redirect to frontend integration page with success message
+      return res.redirect('http://localhost:3001/integration?gmail=connected');
+    } catch (error) {
+      console.error('Gmail callback error:', error);
+      // Redirect to frontend integration page with error message
+      return res.redirect('http://localhost:3001/integration?gmail=error');
     }
   }
 
@@ -137,6 +173,21 @@ export class IntegrationsController {
   @UseGuards(AuthGuard)
   @Post('gmail/connect')
   async connectGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.connectFakeIntegration(
+      req.user.userId,
+      'gmail',
+    );
+  }
+
+  @ApiOperation({ summary: 'Connect Gmail integration (fake for demo)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gmail integration connected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('gmail/connect-fake')
+  async connectGmailFake(@Req() req: AuthenticatedRequest) {
     return this.integrationsService.connectFakeIntegration(
       req.user.userId,
       'gmail',
@@ -215,5 +266,94 @@ export class IntegrationsController {
       'test-user-id',
       sendMessageDto,
     );
+  }
+
+  // OAuth callback endpoint matching n8n URL pattern
+  @ApiOperation({ summary: 'Handle OAuth callback (n8n compatible endpoint)' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirects to frontend integration page',
+  })
+  @Get('/rest/oauth2-credential/callback')
+  async handleOAuthCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+    @Query('error') error?: string,
+  ) {
+    try {
+      console.log('OAuth callback received:', {
+        hasCode: !!code,
+        hasState: !!state,
+        error,
+      });
+
+      if (error) {
+        console.error('OAuth error:', error);
+        return res.redirect(
+          'http://localhost:3001/integration?gmail=error&message=' +
+            encodeURIComponent(error),
+        );
+      }
+
+      if (!code) {
+        console.error('No authorization code received');
+        return res.redirect(
+          'http://localhost:3001/integration?gmail=error&message=no_code',
+        );
+      }
+
+      // Decode state to get user info
+      let userInfo;
+      try {
+        const decodedState = JSON.parse(decodeURIComponent(state));
+        userInfo = decodedState;
+        console.log('User info from state:', {
+          hasToken: !!userInfo.token,
+          source: userInfo.source,
+        });
+      } catch (e) {
+        console.error('Invalid state parameter:', e);
+        return res.redirect(
+          'http://localhost:3001/integration?gmail=error&message=invalid_state',
+        );
+      }
+
+      // Mark Gmail as connected (fake for now)
+      if (userInfo.token) {
+        try {
+          // Decode JWT to get user ID
+          const decoded = this.jwtService.decode(userInfo.token) as any;
+          if (decoded && decoded.userId) {
+            await this.integrationsService.connectFakeIntegration(
+              decoded.userId,
+              'gmail',
+            );
+            console.log(
+              'Gmail integration marked as connected for user:',
+              decoded.userId,
+            );
+          }
+        } catch (jwtError) {
+          console.error('Error processing user token:', jwtError);
+        }
+      }
+
+      // Trigger Gmail sync webhook
+      try {
+        await this.integrationsService.handleGmailSync();
+        console.log('Gmail sync webhook triggered');
+      } catch (syncError) {
+        console.error('Gmail sync webhook failed:', syncError);
+      }
+
+      console.log('Gmail OAuth successful - redirecting to frontend');
+      return res.redirect('http://localhost:3001/integration?gmail=connected');
+    } catch (error) {
+      console.error('OAuth callback handler error:', error);
+      return res.redirect(
+        'http://localhost:3001/integration?gmail=error&message=server_error',
+      );
+    }
   }
 }

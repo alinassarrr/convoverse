@@ -31,6 +31,9 @@ export class ConversationsService {
       let authedUserId: string;
       if ((dto.provider || 'slack') === 'slack') {
         authedUserId = integration.metadata?.authed_user?.id;
+      } else if (dto.provider === 'gmail') {
+        // Gmail doesn't have authenticated user concept in the same way
+        authedUserId = '';
       } else {
         throw new BadRequestException('Provider not supported');
       }
@@ -66,7 +69,7 @@ export class ConversationsService {
             $unwind: { path: '$lastMessage', preserveNullAndEmptyArrays: true },
           },
 
-          // For DMs: Find the other participant (not the authenticated user)
+          // For DMs: Find the other participant (not the authenticated user) - Skip for Gmail
           {
             $lookup: {
               from: 'messages',
@@ -78,6 +81,7 @@ export class ConversationsService {
                       $and: [
                         { $eq: ['$channel', '$$channel'] },
                         { $eq: ['$provider', '$$provider'] },
+                        { $ne: ['$provider', 'gmail'] }, // Skip Gmail
                         { $ne: ['$user', authedUserId] }, // Not the authenticated user
                       ],
                     },
@@ -96,17 +100,28 @@ export class ConversationsService {
               let: {
                 displayUserId: {
                   $cond: [
-                    { $eq: ['$is_im', true] },
-                    // For DMs: use other participant if available, otherwise last message sender
+                    { $eq: ['$provider', 'gmail'] },
+                    null, // Skip Slack user lookup for Gmail
                     {
                       $cond: [
-                        { $gt: [{ $size: '$otherParticipantMessage' }, 0] },
-                        { $arrayElemAt: ['$otherParticipantMessage.user', 0] },
+                        { $eq: ['$is_im', true] },
+                        // For DMs: use other participant if available, otherwise last message sender
+                        {
+                          $cond: [
+                            { $gt: [{ $size: '$otherParticipantMessage' }, 0] },
+                            {
+                              $arrayElemAt: [
+                                '$otherParticipantMessage.user',
+                                0,
+                              ],
+                            },
+                            '$lastMessage.user',
+                          ],
+                        },
+                        // For channels: use last message sender
                         '$lastMessage.user',
                       ],
                     },
-                    // For channels: use last message sender
-                    '$lastMessage.user',
                   ],
                 },
               },
@@ -128,15 +143,29 @@ export class ConversationsService {
               name: 1,
               description: 1,
               last_message_ts: 1,
+              user: 1, // Include user field for all conversations (important for Gmail)
               'lastMessage.text': {
                 $substr: [{ $ifNull: ['$lastMessage.text', ''] }, 0, 20],
               },
               'lastMessage.ts': 1,
               sender: {
-                id: '$sender.id',
-                name: '$sender.name',
-                display_name: '$sender.profile.real_name',
-                avatar: '$sender.profile.image_48',
+                $cond: [
+                  { $eq: ['$provider', 'gmail'] },
+                  // For Gmail: create sender object from user field or conversation name
+                  {
+                    id: { $ifNull: ['$user', '$name'] },
+                    name: { $ifNull: ['$user', '$name'] },
+                    display_name: { $ifNull: ['$name', '$user'] },
+                    avatar: null,
+                  },
+                  // For Slack: use the sender from lookup
+                  {
+                    id: '$sender.id',
+                    name: '$sender.name',
+                    display_name: '$sender.profile.real_name',
+                    avatar: '$sender.profile.image_48',
+                  },
+                ],
               },
             },
           },
@@ -160,6 +189,9 @@ export class ConversationsService {
       let authedUserId: string;
       if (provider === 'slack') {
         authedUserId = integration.metadata?.authed_user?.id;
+      } else if (provider === 'gmail') {
+        // Gmail doesn't have authenticated user concept in the same way
+        authedUserId = '';
       } else {
         throw new BadRequestException('Provider not supported');
       }
@@ -168,11 +200,23 @@ export class ConversationsService {
         { $sort: { ts: -1 } },
         { $limit: 30 },
 
+        // Conditional lookup: Slack users for Slack, no lookup for Gmail
         {
           $lookup: {
             from: 'slack_users',
-            localField: 'user',
-            foreignField: 'id',
+            let: { messageUser: '$user', messageProvider: '$provider' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$$messageProvider', 'slack'] },
+                      { $eq: ['$id', '$$messageUser'] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'sender',
           },
         },
@@ -180,13 +224,27 @@ export class ConversationsService {
         {
           $addFields: {
             direction: {
-              $cond: [{ $eq: ['$user', authedUserId] }, 'out', 'in'],
+              $cond: [
+                { $eq: ['$provider', 'gmail'] },
+                // For Gmail: assume all messages are incoming for now
+                'in',
+                // For Slack: check if user matches authenticated user
+                { $cond: [{ $eq: ['$user', authedUserId] }, 'out', 'in'] },
+              ],
             },
             senderName: {
               $cond: [
-                { $eq: ['$user', authedUserId] },
-                'You',
-                '$sender.profile.real_name',
+                { $eq: ['$provider', 'gmail'] },
+                // For Gmail: use user field as-is (will be parsed in frontend)
+                '$user',
+                // For Slack: use existing logic
+                {
+                  $cond: [
+                    { $eq: ['$user', authedUserId] },
+                    'You',
+                    '$sender.profile.real_name',
+                  ],
+                },
               ],
             },
           },
@@ -196,13 +254,30 @@ export class ConversationsService {
             _id: 1,
             text: 1,
             ts: 1,
+            type: 1, // Include type field for Gmail subjects
+            user: 1, // Include user field for Gmail
+            channel: 1,
+            provider: 1,
             direction: 1,
             senderName: 1,
             sender: {
-              id: '$sender.id',
-              name: '$sender.name',
-              display_name: '$sender.profile.real_name',
-              avatar: '$sender.profile.image_48',
+              $cond: [
+                { $eq: ['$provider', 'gmail'] },
+                // For Gmail: create simple sender object (parsing will be done in frontend)
+                {
+                  id: '$user',
+                  name: '$user',
+                  display_name: '$user',
+                  avatar: null,
+                },
+                // For Slack: use existing sender structure
+                {
+                  id: '$sender.id',
+                  name: '$sender.name',
+                  display_name: '$sender.profile.real_name',
+                  avatar: '$sender.profile.image_48',
+                },
+              ],
             },
           },
         },

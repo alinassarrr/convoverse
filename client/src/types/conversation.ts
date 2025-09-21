@@ -6,9 +6,15 @@ export interface Message {
     name: string;
     display_name?: string;
     avatar?: string;
+    email?: string; // Gmail: extracted from user field
   };
   isFromUser: boolean;
   status?: "sent" | "delivered" | "read" | "failed";
+  // Gmail-specific fields
+  type?: string; // Gmail: Email subject
+  user?: string; // Gmail: "Name <email@domain.com>" format
+  channel?: string; // Thread/conversation ID
+  provider?: "slack" | "whatsapp" | "gmail";
 }
 
 export interface Conversation {
@@ -19,16 +25,25 @@ export interface Conversation {
   provider: "slack" | "whatsapp" | "gmail";
   description?: string;
   last_message_ts: string;
-  lastMessage: {
+  lastMessage?: {
     ts: string;
     text: string;
+    type?: string; // Gmail: Email subject
   };
-  sender: {
+  sender?: {
     id: string;
     name: string;
     display_name: string;
     avatar: string;
+    email?: string;
   };
+  // Gmail-specific fields
+  user?: string; // Gmail: "Name <email@domain.com>" format
+  created?: number;
+  updated?: number;
+  purpose?: string | null;
+  topic?: string | null;
+  shared_team_ids?: string[] | null;
   messages?: Message[];
 }
 

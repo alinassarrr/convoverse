@@ -6,6 +6,13 @@ import { Conversation, Message } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
 import { socketService } from "@/lib/socket";
 import { MessageInput } from "./MessageInput";
+import {
+  parseGmailUser,
+  getInitials,
+  formatEmailSubject,
+  getEmailColor,
+} from "@/lib/gmail-utils";
+import { Mail } from "lucide-react";
 
 interface ChatMessagesProps {
   conversation: Conversation | null;
@@ -131,18 +138,40 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       );
 
       // Transform API response to Message format
-      const transformedMessages: Message[] = messagesData.map((msg: any) => ({
-        ts: msg.ts,
-        text: ConversationsAPI.cleanMessageText(msg.text || "No text"),
-        sender: {
-          id: msg.sender?.id || msg.user || "unknown",
-          name: msg.sender?.name || msg.senderName || "Unknown",
-          display_name: msg.sender?.display_name || msg.senderName || "Unknown",
-          avatar: msg.sender?.avatar,
-        },
-        isFromUser: msg.direction === "out",
-        status: "delivered",
-      }));
+      const transformedMessages: Message[] = messagesData.map((msg: any) => {
+        // Parse Gmail user if this is a Gmail message
+        let parsedSender = null;
+        if (conversation.provider === "gmail" && msg.user) {
+          parsedSender = parseGmailUser(msg.user);
+        }
+
+        return {
+          ts: msg.ts,
+          text: ConversationsAPI.cleanMessageText(msg.text || "No text"),
+          sender: {
+            id: msg.sender?.id || msg.user || "unknown",
+            name:
+              parsedSender?.name ||
+              msg.sender?.name ||
+              msg.senderName ||
+              "Unknown",
+            display_name:
+              parsedSender?.displayName ||
+              msg.sender?.display_name ||
+              msg.senderName ||
+              "Unknown",
+            avatar: msg.sender?.avatar,
+            email: parsedSender?.email || msg.sender?.email,
+          },
+          isFromUser: msg.direction === "out",
+          status: "delivered",
+          // Gmail-specific fields
+          type: msg.type, // Email subject
+          user: msg.user, // Gmail format: "Name <email>"
+          channel: msg.channel,
+          provider: msg.provider || conversation.provider,
+        };
+      });
 
       // Sort by timestamp (oldest first)
       transformedMessages.sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts));
@@ -215,33 +244,96 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
         className="top-bar p-4 border-b border-border flex"
         style={{ backgroundColor: "#101720" }}
       >
-        <Avatar className="w-10 h-10">
-          <AvatarImage
-            src={conversation.is_im ? conversation.sender.avatar : ""}
-            alt={
-              conversation.is_im
-                ? conversation.sender.display_name
-                : conversation.name
-            }
-          />
-          {!conversation.is_im && (
-            <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
-              {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+        {conversation.provider === "gmail" ? (
+          // Gmail header with email-specific styling
+          <>
+            {(() => {
+              const parsedUser = conversation.user
+                ? parseGmailUser(conversation.user)
+                : null;
+              const displayName =
+                parsedUser?.displayName || conversation.name || "Unknown";
+              const email = parsedUser?.email || "";
+              const initials = getInitials(displayName);
+              const avatarColor = getEmailColor(email);
+
+              return (
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white"
+                  style={{ backgroundColor: avatarColor }}
+                >
+                  {initials}
+                </div>
+              );
+            })()}
+            <div className="sender-info flex flex-col ml-3 flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold">
+                  {(() => {
+                    const parsedUser = conversation.user
+                      ? parseGmailUser(conversation.user)
+                      : null;
+                    return (
+                      parsedUser?.displayName || conversation.name || "Unknown"
+                    );
+                  })()}
+                </h2>
+                <span className="text-xs text-muted-foreground">Gmail</span>
+              </div>
+              <div className="space-y-1">
+                {(() => {
+                  const parsedUser = conversation.user
+                    ? parseGmailUser(conversation.user)
+                    : null;
+                  return (
+                    parsedUser?.email && (
+                      <p className="text-sm text-muted-foreground">
+                        {parsedUser.email}
+                      </p>
+                    )
+                  );
+                })()}
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm font-medium text-foreground">
+                    {formatEmailSubject(conversation.name, 50)}
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
-        </Avatar>
-        <div className="sender-info flex flex-col ml-3">
-          <h2 className="font-semibold">
-            {conversation.is_im
-              ? conversation.sender.display_name
-              : `# ${conversation.name}`}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {conversation.is_im
-              ? `Direct message • ${conversation.provider}`
-              : `Channel • ${conversation.provider}`}
-          </p>
-        </div>
+          </>
+        ) : (
+          // Slack/WhatsApp header
+          <>
+            <Avatar className="w-10 h-10">
+              <AvatarImage
+                src={conversation.is_im ? conversation.sender?.avatar : ""}
+                alt={
+                  conversation.is_im
+                    ? conversation.sender?.display_name
+                    : conversation.name
+                }
+              />
+              {!conversation.is_im && (
+                <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
+                  {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+                </div>
+              )}
+            </Avatar>
+            <div className="sender-info flex flex-col ml-3">
+              <h2 className="font-semibold">
+                {conversation.is_im
+                  ? conversation.sender?.display_name
+                  : `# ${conversation.name}`}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {conversation.is_im
+                  ? `Direct message • ${conversation.provider}`
+                  : `Channel • ${conversation.provider}`}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Chat Messages */}
@@ -277,31 +369,47 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                 }`}
               >
                 {/* Avatar for received messages */}
-                {!message.isFromUser && (
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarImage
-                      src={message.sender.avatar || undefined}
-                      alt={message.sender.display_name || message.sender.name}
-                    />
-                    <AvatarFallback className="text-xs">
-                      {(
-                        message.sender.display_name ||
-                        message.sender.name ||
-                        "U"
-                      )
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .substring(0, 2)
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                {!message.isFromUser &&
+                  (conversation.provider === "gmail" && message.sender.email ? (
+                    // Gmail: Use color-coded avatar based on email
+                    <div
+                      className="w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                      style={{
+                        backgroundColor: getEmailColor(message.sender.email),
+                      }}
+                    >
+                      {getInitials(
+                        message.sender.display_name || message.sender.name
+                      )}
+                    </div>
+                  ) : (
+                    // Slack/WhatsApp: Use standard avatar
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarImage
+                        src={message.sender.avatar || undefined}
+                        alt={message.sender.display_name || message.sender.name}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {(
+                          message.sender.display_name ||
+                          message.sender.name ||
+                          "U"
+                        )
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .substring(0, 2)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
 
                 <div
                   className={`max-w-[70%] rounded-lg p-3 ${
                     message.isFromUser
                       ? "bg-primary text-primary-foreground"
+                      : conversation.provider === "gmail"
+                      ? "border-l-4 border-l-blue-500 bg-[#4E4E4E]"
                       : "border-l-4 border-l-emerald-500 bg-[#4E4E4E]"
                   } ${message.status === "sending" ? "opacity-70" : ""}`}
                 >
@@ -316,12 +424,36 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                           </span>
                         )}
                       </span>
+                      {message.sender.email &&
+                        conversation.provider === "gmail" && (
+                          <span className="text-xs text-muted-foreground/70">
+                            {message.sender.email}
+                          </span>
+                        )}
                       <span className="text-xs text-muted-foreground">
                         {formatMessageTime(message.ts)}
                       </span>
                     </div>
                   )}
-                  <p className="text-sm whitespace-pre-wrap ">{message.text}</p>
+
+                  {/* Gmail: Show subject line if different from conversation name */}
+                  {conversation.provider === "gmail" &&
+                    message.type &&
+                    message.type !== conversation.name && (
+                      <div className="mb-2 pb-2 border-b border-muted/20">
+                        <div className="flex items-center gap-1 text-xs text-blue-400 font-medium">
+                          <Mail className="w-3 h-3" />
+                          <span>
+                            Re: {formatEmailSubject(message.type, 40)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                  <div className="text-sm whitespace-pre-wrap break-words">
+                    {message.text}
+                  </div>
+
                   {message.isFromUser && (
                     <div className="text-xs text-primary-foreground/70 mt-1 text-right">
                       {formatMessageTime(message.ts)}
