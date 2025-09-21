@@ -19,11 +19,11 @@ export default function InboxPage() {
 
   // Platform filtering state
   const [selectedPlatform, setSelectedPlatform] = useState<
-    "all" | "slack" | "whatsapp" | "gmail"
+    "all" | "slack" | "gmail"
   >("all");
   const [conversationCounts, setConversationCounts] = useState<
     Record<string, number>
-  >({ all: 0, slack: 0, whatsapp: 0, gmail: 0 });
+  >({ all: 0, slack: 0, gmail: 0 });
 
   // Summary and Actions state
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -38,9 +38,7 @@ export default function InboxPage() {
     setSelectedConversation(conversation);
   };
 
-  const handlePlatformSelect = (
-    platform: "all" | "slack" | "whatsapp" | "gmail"
-  ) => {
+  const handlePlatformSelect = (platform: "all" | "slack" | "gmail") => {
     setSelectedPlatform(platform);
     setSelectedConversation(null); // Clear selected conversation when changing platform
   };
@@ -144,8 +142,6 @@ export default function InboxPage() {
       const counts = {
         all: allConversations.length,
         slack: allConversations.filter((c) => c.provider === "slack").length,
-        whatsapp: allConversations.filter((c) => c.provider === "whatsapp")
-          .length,
         gmail: allConversations.filter((c) => c.provider === "gmail").length,
       };
 
