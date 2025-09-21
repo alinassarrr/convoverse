@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { MessageCircleMoreIcon } from "lucide-react";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -108,32 +109,33 @@ export function PlatformsList({
       {/* Connected Platforms */}
       {platforms.length > 0 ? (
         platforms.map((platform) => (
-          <button
-            key={platform.id}
-            onClick={() =>
-              onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")
-            }
-            className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
-              activePlatform === platform.id
-                ? "bg-emerald-600"
-                : "hover:bg-gray-600"
-            }`}
-            style={
-              activePlatform !== platform.id
-                ? { backgroundColor: "#3C3C3C" }
-                : undefined
-            }
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center">
-                {platform.icon}
+          <div key={platform.id} className="space-y-1">
+            <button
+              onClick={() =>
+                onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")
+              }
+              className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
+                activePlatform === platform.id
+                  ? "bg-emerald-600"
+                  : "hover:bg-gray-600"
+              }`}
+              style={
+                activePlatform !== platform.id
+                  ? { backgroundColor: "#3C3C3C" }
+                  : undefined
+              }
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center">
+                  {platform.icon}
+                </div>
+                <span>{platform.name}</span>
               </div>
-              <span>{platform.name}</span>
-            </div>
-            <div className="bg-gray-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
-              {conversationCounts[platform.id] || 0}
-            </div>
-          </button>
+              <div className="bg-gray-500 text-white text-sm px-2.5 py-1 rounded-full font-semibold">
+                {conversationCounts[platform.id] || 0}
+              </div>
+            </button>
+          </div>
         ))
       ) : (
         <div className="text-center py-4">
