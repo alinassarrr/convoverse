@@ -60,6 +60,8 @@ export function MessageInput({
         channel: conversation.channel,
         text: messageText,
         isDM: conversation.is_im,
+        provider: conversation.provider,
+        conversation: conversation,
       });
 
       // Call optional callback
@@ -130,11 +132,15 @@ export function MessageInput({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder={`Message ${
-              conversation.is_im
-                ? conversation.sender.display_name
-                : `#${conversation.name}`
-            }...`}
+            placeholder={
+              conversation.provider === "gmail"
+                ? `Reply to ${conversation.name || "email"}...`
+                : `Message ${
+                    conversation.is_im
+                      ? conversation.sender.display_name
+                      : `#${conversation.name}`
+                  }...`
+            }
             className="resize-none min-h-[44px] max-h-[120px]"
             rows={1}
             disabled={sending}

@@ -303,7 +303,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
             </div>
           </>
         ) : (
-          // Slack/WhatsApp header
+          // Slack header
           <>
             <Avatar className="w-10 h-10">
               <AvatarImage
@@ -383,7 +383,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                       )}
                     </div>
                   ) : (
-                    // Slack/WhatsApp: Use standard avatar
+                    // Slack: Use standard avatar
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarImage
                         src={message.sender.avatar || undefined}
