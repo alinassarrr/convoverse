@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, Inbox } from "lucide-react";
+import { BotIcon, Inbox, CalendarIcon, BellIcon, SettingsIcon, PlugIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,6 +12,16 @@ export default function DashboardClient({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  const getPageTitle = (path: string) => {
+    if (path === "/inbox") return "Unified Inbox";
+    if (path === "/assistant") return "AI Assistant";
+    if (path === "/calendar") return "Calendar";
+    if (path === "/notifications") return "Notification Center";
+    if (path === "/integration") return "Integration";
+    if (path === "/settings") return "Settings";
+    return "ConvoVerse";
+  };
 
   return (
     <div className="flex bg-gray-50 h-screen">
@@ -48,6 +58,42 @@ export default function DashboardClient({
                 <BotIcon />
                 <span className="font-semibold ml-2">AI Assistant</span>
               </Link>
+              <Link
+                href="/notifications"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/notifications" ? "bg-secondary" : ""
+                }`}
+              >
+                <BellIcon />
+                <span className="font-semibold ml-2">Notifications</span>
+              </Link>
+              <Link
+                href="/calendar"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/calendar" ? "bg-secondary" : ""
+                }`}
+              >
+                <CalendarIcon />
+                <span className="font-semibold ml-2">Calendar</span>
+              </Link>
+              <Link
+                href="/integration"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/integration" ? "bg-secondary" : ""
+                }`}
+              >
+                <PlugIcon />
+                <span className="font-semibold ml-2">Integration</span>
+              </Link>
+              <Link
+                href="/settings"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/settings" ? "bg-secondary" : ""
+                }`}
+              >
+                <SettingsIcon />
+                <span className="font-semibold ml-2">Settings</span>
+              </Link>
             </div>
             
             {/* Logout button at bottom */}
@@ -62,7 +108,7 @@ export default function DashboardClient({
         {/* topbar */}
         <div className="h-16 bg-background border-b border-border flex items-center px-6 shadow-sm z-20">
           <h1 className="text-lg font-semibold">
-            {pathname === "/inbox" ? "Unified Inbox" : "AI Assistant"}
+            {getPageTitle(pathname)}
           </h1>
         </div>
         {/* content */}
