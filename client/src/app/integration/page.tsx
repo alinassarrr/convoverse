@@ -53,8 +53,8 @@ export default function IntegrationsPage() {
     // Handle Slack redirect
     const slackStatus = searchParams.get("slack");
     if (slackStatus === "connected") {
-      //update status
-      setStatus((prev) => ({ ...prev, slack: true }));
+      // Reload integration status from backend to ensure UI is up-to-date
+      loadIntegrationStatus();
       router.replace("/integration");
 
       // Start automatic sync after short delay
@@ -73,7 +73,8 @@ export default function IntegrationsPage() {
     // Handle Gmail redirect
     const gmailStatus = searchParams.get("gmail");
     if (gmailStatus === "connected") {
-      setStatus((prev) => ({ ...prev, gmail: true }));
+      // Reload integration status from backend to ensure UI is up-to-date
+      loadIntegrationStatus();
       router.replace("/integration");
 
       // Start automatic Gmail sync after short delay

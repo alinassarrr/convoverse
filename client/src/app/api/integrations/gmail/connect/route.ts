@@ -15,18 +15,21 @@ export async function POST() {
 
     console.log("Connecting Gmail integration...");
     
-    // Simple Google OAuth URL - redirect to n8n webhook
-    const oauthUrl = "https://accounts.google.com/o/oauth2/auth?" + new URLSearchParams({
-      client_id: "1090717084294-bn8lgskqv5vjnik5kk12edg1eqn7lq8h.apps.googleusercontent.com",
-      redirect_uri: "http://localhost:5678/rest/oauth2-credential/callback",
-      scope: "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.labels https://www.googleapis.com/auth/gmail.modify",
-      response_type: "code",
-      access_type: "offline",
-      prompt: "consent",
-      state: encodeURIComponent(JSON.stringify({ token, source: "frontend" }))
-    }).toString();
+    // Call NestJS backend to get Gmail OAuth URL
+    const backendResponse = await fetch("http://localhost:3000/integrations/gmail/connect", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-    console.log("Generated OAuth URL:", oauthUrl);
+    if (!backendResponse.ok) {
+      throw new Error(`Backend error: ${backendResponse.status}`);
+    }
+
+    const oauthUrl = await backendResponse.text();
+    console.log("Gmail OAuth URL from backend:", oauthUrl);
     
     return NextResponse.json({
       redirect: true,

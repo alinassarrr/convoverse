@@ -112,7 +112,9 @@ export function PlatformsList({
           <div key={platform.id} className="space-y-1">
             <button
               onClick={() =>
-                onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")
+                onPlatformSelect?.(
+                  platform.id as "slack" | "whatsapp" | "gmail"
+                )
               }
               className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
                 activePlatform === platform.id
