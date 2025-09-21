@@ -46,6 +46,15 @@ export class IntegrationsController {
     return this.integrationsService.generateSlackAuthUrl(req.user.userId);
   }
 
+  @ApiOperation({ summary: 'Connect Gmail account' })
+  @ApiResponse({ status: 200, description: 'Returns Gmail OAuth URL' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Get('gmail/connect')
+  redirectToGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.generateGmailAuthUrl(req.user.userId);
+  }
+
   @ApiOperation({ summary: 'Handle Slack OAuth callback' })
   @ApiResponse({
     status: 302,
@@ -68,6 +77,33 @@ export class IntegrationsController {
       console.error('Slack callback error:', error);
       // Redirect to frontend integration page with error message
       return res.redirect('http://localhost:3001/integration?slack=error');
+    }
+  }
+
+  @ApiOperation({ summary: 'Handle Gmail OAuth callback' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirects to frontend integration page',
+  })
+  @Get('gmail/callback')
+  async handleGmailCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Process OAuth callback to exchange code for tokens
+      await this.integrationsService.handleGmailCallback(code, state);
+
+      // Trigger Gmail sync webhook
+      await this.integrationsService.handleGmailSync();
+
+      // Redirect to frontend integration page with success message
+      return res.redirect('http://localhost:3001/integration?gmail=connected');
+    } catch (error) {
+      console.error('Gmail callback error:', error);
+      // Redirect to frontend integration page with error message
+      return res.redirect('http://localhost:3001/integration?gmail=error');
     }
   }
 
@@ -137,6 +173,21 @@ export class IntegrationsController {
   @UseGuards(AuthGuard)
   @Post('gmail/connect')
   async connectGmail(@Req() req: AuthenticatedRequest) {
+    return this.integrationsService.connectFakeIntegration(
+      req.user.userId,
+      'gmail',
+    );
+  }
+
+  @ApiOperation({ summary: 'Connect Gmail integration (fake for demo)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gmail integration connected successfully',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard)
+  @Post('gmail/connect-fake')
+  async connectGmailFake(@Req() req: AuthenticatedRequest) {
     return this.integrationsService.connectFakeIntegration(
       req.user.userId,
       'gmail',
