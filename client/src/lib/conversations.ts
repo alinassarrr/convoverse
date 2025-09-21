@@ -175,8 +175,20 @@ export class ConversationsAPI {
     channel: string;
     text: string;
     isDM: boolean;
+    provider?: string;
+    conversation?: any;
   }) {
     try {
+      // Route to appropriate sending method based on provider
+      if (params.provider === "gmail") {
+        return this.sendGmailMessage({
+          channel: params.channel,
+          text: params.text,
+          conversation: params.conversation,
+        });
+      }
+      
+      // Default Slack sending
       const url = `${API_BASE_URL}/integrations/slack/send-message`;
 
       const payload = {
@@ -203,6 +215,68 @@ export class ConversationsAPI {
       return await response.json();
     } catch (error) {
       console.error("Failed to send message:", error);
+      throw error;
+    }
+  }
+
+  static async sendGmailMessage(params: {
+    channel: string;
+    text: string;
+    conversation: any;
+  }) {
+    try {
+      // Extract Gmail recipient from conversation user field
+      // conversation.user format: "Name <email@domain.com>"
+      let recipientEmail = "";
+      if (params.conversation?.user) {
+        const match = params.conversation.user.match(/<(.+?)>/);
+        recipientEmail = match ? match[1] : params.conversation.user;
+      }
+      
+      if (!recipientEmail) {
+        throw new Error("Cannot determine recipient email address");
+      }
+
+      const payload = {
+        to: recipientEmail,
+        messageId: params.channel, // Use channel as threadId/messageId
+        messageText: params.text,
+      };
+
+      console.log("Sending Gmail reply:", {
+        to: recipientEmail,
+        messageId: params.channel,
+        textLength: params.text.length,
+      });
+
+      // Use backend API instead of direct webhook call
+      const response = await fetch(`${API_BASE_URL}/integrations/gmail/send-message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(
+          `Gmail API failed: ${response.status} - ${errorData.message}`
+        );
+      }
+
+      const result = await response.json();
+      
+      return {
+        success: true,
+        provider: "gmail",
+        to: recipientEmail,
+        messageId: params.channel,
+        message: "Gmail reply sent successfully",
+        result,
+      };
+    } catch (error) {
+      console.error("Failed to send Gmail message:", error);
       throw error;
     }
   }
