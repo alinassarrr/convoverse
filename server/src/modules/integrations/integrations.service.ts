@@ -56,8 +56,7 @@ export class IntegrationsService {
     const baseUrl = 'https://accounts.google.com/o/oauth2/auth';
     const params = new URLSearchParams({
       client_id: clientId,
-      redirect_uri:
-        'http://localhost:3000/integrations/rest/oauth2-credential/callback',
+      redirect_uri: redirectUri,
       scope: scopes,
       response_type: 'code',
       access_type: 'offline',
