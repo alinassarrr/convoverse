@@ -20,10 +20,10 @@ interface PlatformsListProps {
   onPlatformSelect?: (platform: "all" | "slack" | "whatsapp" | "gmail") => void;
 }
 
-export function PlatformsList({ 
-  activePlatform = "all", 
+export function PlatformsList({
+  activePlatform = "all",
   conversationCounts = { all: 0, slack: 0, whatsapp: 0, gmail: 0 },
-  onPlatformSelect 
+  onPlatformSelect,
 }: PlatformsListProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,11 +88,11 @@ export function PlatformsList({
       <button
         onClick={() => onPlatformSelect?.("all")}
         className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
-          activePlatform === "all"
-            ? "bg-emerald-600"
-            : "hover:bg-gray-600"
+          activePlatform === "all" ? "bg-emerald-600" : "hover:bg-gray-600"
         }`}
-        style={activePlatform !== "all" ? { backgroundColor: '#3C3C3C' } : undefined}
+        style={
+          activePlatform !== "all" ? { backgroundColor: "#3C3C3C" } : undefined
+        }
       >
         <div className="flex items-center gap-3">
           <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
@@ -110,13 +110,19 @@ export function PlatformsList({
         platforms.map((platform) => (
           <button
             key={platform.id}
-            onClick={() => onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")}
+            onClick={() =>
+              onPlatformSelect?.(platform.id as "slack" | "whatsapp" | "gmail")
+            }
             className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
               activePlatform === platform.id
                 ? "bg-emerald-600"
                 : "hover:bg-gray-600"
             }`}
-            style={activePlatform !== platform.id ? { backgroundColor: '#3C3C3C' } : undefined}
+            style={
+              activePlatform !== platform.id
+                ? { backgroundColor: "#3C3C3C" }
+                : undefined
+            }
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-lg flex items-center justify-center">
