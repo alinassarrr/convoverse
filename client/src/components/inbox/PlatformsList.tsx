@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircleMoreIcon } from "lucide-react";
 import { SlackIcon } from "@/components/icons/SlackIcon";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
 
 type Platform = {
@@ -16,14 +15,14 @@ type Platform = {
 };
 
 interface PlatformsListProps {
-  activePlatform?: "all" | "slack" | "whatsapp" | "gmail";
+  activePlatform?: "all" | "slack" | "gmail";
   conversationCounts?: Record<string, number>;
-  onPlatformSelect?: (platform: "all" | "slack" | "whatsapp" | "gmail") => void;
+  onPlatformSelect?: (platform: "all" | "slack" | "gmail") => void;
 }
 
 export function PlatformsList({
   activePlatform = "all",
-  conversationCounts = { all: 0, slack: 0, whatsapp: 0, gmail: 0 },
+  conversationCounts = { all: 0, slack: 0, gmail: 0 },
   onPlatformSelect,
 }: PlatformsListProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
@@ -33,10 +32,6 @@ export function PlatformsList({
     slack: {
       name: "Slack",
       icon: <SlackIcon className="w-5 h-5 text-white" />,
-    },
-    whatsapp: {
-      name: "WhatsApp",
-      icon: <WhatsAppIcon className="w-5 h-5 text-white" />,
     },
     gmail: {
       name: "Gmail",
@@ -112,9 +107,7 @@ export function PlatformsList({
           <div key={platform.id} className="space-y-1">
             <button
               onClick={() =>
-                onPlatformSelect?.(
-                  platform.id as "slack" | "whatsapp" | "gmail"
-                )
+                onPlatformSelect?.(platform.id as "slack" | "gmail")
               }
               className={`w-full rounded-md p-1 pl-2 pr-2 flex items-center justify-between font-medium transition-colors ${
                 activePlatform === platform.id

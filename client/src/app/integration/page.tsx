@@ -2,28 +2,29 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Loader2, Settings, X } from "lucide-react";
 import { SlackIcon } from "@/components/icons/SlackIcon";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
 
-type Provider = "slack" | "whatsapp" | "gmail";
-type StatusMap = Record<Provider, boolean>;
+type Provider = "slack" | "gmail";
 
-const PROVIDERS = [
+const integrations = [
   {
     id: "slack" as Provider,
     name: "Slack",
     desc: "Connect your Slack workspace to manage team conversations and channels",
     icon: <SlackIcon />,
-  },
-  {
-    id: "whatsapp" as Provider,
-    name: "WhatsApp",
-    desc: "Connect WhatsApp Business to handle customer messages and support",
-    icon: <WhatsAppIcon />,
   },
   {
     id: "gmail" as Provider,
@@ -33,12 +34,13 @@ const PROVIDERS = [
   },
 ];
 
+type StatusMap = Record<Provider, boolean>;
+
 export default function IntegrationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<StatusMap>({
     slack: false,
-    whatsapp: false,
     gmail: false,
   });
   const [loading, setLoading] = useState(true);
@@ -53,8 +55,8 @@ export default function IntegrationsPage() {
     // Handle Slack redirect
     const slackStatus = searchParams.get("slack");
     if (slackStatus === "connected") {
-      // Reload integration status from backend to ensure UI is up-to-date
-      loadIntegrationStatus();
+      //update status
+      setStatus((prev) => ({ ...prev, slack: true }));
       router.replace("/integration");
 
       // Start automatic sync after short delay
@@ -73,8 +75,7 @@ export default function IntegrationsPage() {
     // Handle Gmail redirect
     const gmailStatus = searchParams.get("gmail");
     if (gmailStatus === "connected") {
-      // Reload integration status from backend to ensure UI is up-to-date
-      loadIntegrationStatus();
+      setStatus((prev) => ({ ...prev, gmail: true }));
       router.replace("/integration");
 
       // Start automatic Gmail sync after short delay
@@ -217,7 +218,7 @@ export default function IntegrationsPage() {
   async function toggle(provider: Provider) {
     const isConnecting = !status[provider];
     const providerName =
-      PROVIDERS.find((p) => p.id === provider)?.name || provider;
+      integrations.find((p) => p.id === provider)?.name || provider;
 
     if (connecting) return; // prevent multiple simultaneous actions
     setConnecting(provider);
@@ -291,7 +292,7 @@ export default function IntegrationsPage() {
             );
           }
         } else {
-          //fake integration for demo purposes (WhatsApp)
+          //fake integration for demo purposes
           const loadingToast = toast.loading(
             `Connecting to ${providerName}...`,
             {
@@ -430,7 +431,7 @@ export default function IntegrationsPage() {
 
             {/* Service Cards */}
             <div className="space-y-6">
-              {PROVIDERS.map((provider) => (
+              {integrations.map((provider) => (
                 <div
                   key={provider.id}
                   className={`flex items-center justify-between p-6 rounded-xl border transition-all backdrop-blur-sm hover:scale-[1.02] hover:shadow-lg ${

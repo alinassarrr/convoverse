@@ -5,11 +5,11 @@ import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
 export class ListLatestConversationDto {
   @ApiPropertyOptional({
     description: 'Filter by provider',
-    enum: ['slack', 'whatsapp', 'gmail'],
+    enum: ['slack', 'gmail'],
   })
   @IsOptional()
-  @IsIn(['slack', 'whatsapp', 'gmail'])
-  provider?: 'slack' | 'whatsapp' | 'gmail';
+  @IsIn(['slack', 'gmail'])
+  provider?: 'slack' | 'gmail';
 
   @ApiPropertyOptional({
     description: 'Max number of conversations to return',

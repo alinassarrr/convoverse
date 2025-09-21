@@ -6,18 +6,11 @@ import { Conversation } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
 import { socketService } from "@/lib/socket";
 import { SlackIcon } from "@/components/icons/SlackIcon";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
-import {
-  parseGmailUser,
-  getInitials,
-  formatEmailSubject,
-  getEmailColor,
-} from "@/lib/gmail-utils";
-import { Mail, MailOpen } from "lucide-react";
+import { getInitials } from "@/lib/gmail-utils";
 
 interface ConversationsListProps {
-  platform?: "slack" | "whatsapp" | "gmail" | "all";
+  platform?: "slack" | "gmail" | "all";
   selectedConversationId?: string;
   onConversationSelect: (conversation: Conversation) => void;
 }
@@ -158,8 +151,6 @@ export function ConversationsList({
     switch (provider) {
       case "slack":
         return <SlackIcon className="w-4 h-4 text-white" />;
-      case "whatsapp":
-        return <WhatsAppIcon className="w-4 h-4 text-white" />;
       case "gmail":
         return <GmailIcon className="w-4 h-4" />; // Use default Gmail colors
       default:
@@ -171,8 +162,6 @@ export function ConversationsList({
     switch (provider) {
       case "slack":
         return "bg-[#4A154B]";
-      case "whatsapp":
-        return "bg-[#25D366]";
       case "gmail":
         return "bg-transparent"; // No background for Gmail
       default:
@@ -181,25 +170,7 @@ export function ConversationsList({
   };
 
   const getConversationDisplayInfo = (conversation: Conversation) => {
-    if (conversation.provider === "gmail") {
-      // Gmail display logic
-      const parsedUser = conversation.user ? parseGmailUser(conversation.user) : null;
-      const displayName = parsedUser?.displayName || conversation.name || "Unknown";
-      const email = parsedUser?.email || "";
-      const initials = getInitials(displayName);
-      const avatarColor = getEmailColor(email);
-      
-      return {
-        displayName,
-        email,
-        subject: conversation.name || "No Subject",
-        initials,
-        isEmail: true,
-        avatarColor,
-      };
-    }
-    
-    // Slack/WhatsApp display logic (unchanged)
+    // Slack display logic (unchanged)
     const displayName = conversation.is_im
       ? conversation.sender?.display_name ||
         conversation.sender?.name ||
@@ -315,7 +286,7 @@ export function ConversationsList({
       {filteredConversations.map((conversation) => {
         // Debug: Log Gmail conversations to see what we get from DB
         if (conversation.provider === "gmail") {
-          console.log("🔍 Gmail Conversation from DB:", {
+          console.log("Gmail Conversation from DB:", {
             _id: conversation._id,
             user: conversation.user,
             name: conversation.name,
@@ -341,32 +312,21 @@ export function ConversationsList({
           >
             <div className="flex gap-3 items-start">
               <div className="relative">
-                {conversation.provider === "gmail" ? (
-                  // Gmail: Color-coded avatar with initials
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white"
-                    style={{ backgroundColor: displayInfo.avatarColor }}
-                  >
-                    {displayInfo.initials}
-                  </div>
-                ) : (
-                  // Slack/WhatsApp: Standard avatar
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src={conversation.is_im ? conversation.sender?.avatar : ""}
-                      alt={
-                        conversation.is_im
-                          ? conversation.sender?.display_name
-                          : conversation.name
-                      }
-                    />
-                    {!conversation.is_im && (
-                      <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
-                        {conversation.name?.charAt(0)?.toUpperCase() || "#"}
-                      </div>
-                    )}
-                  </Avatar>
-                )}
+                <Avatar className="w-10 h-10">
+                  <AvatarImage
+                    src={conversation.is_im ? conversation.sender?.avatar : ""}
+                    alt={
+                      conversation.is_im
+                        ? conversation.sender?.display_name
+                        : conversation.name
+                    }
+                  />
+                  {!conversation.is_im && (
+                    <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
+                      {conversation.name?.charAt(0)?.toUpperCase() || "#"}
+                    </div>
+                  )}
+                </Avatar>
                 {/* Platform indicator */}
                 <div
                   className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${getPlatformColor(
@@ -383,11 +343,6 @@ export function ConversationsList({
                     <h3 className="font-semibold text-sm truncate">
                       {displayInfo.displayName}
                     </h3>
-                    {conversation.provider === "gmail" && displayInfo.email && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {displayInfo.email}
-                      </p>
-                    )}
                   </div>
                   <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
                     {ConversationsAPI.formatTimestamp(

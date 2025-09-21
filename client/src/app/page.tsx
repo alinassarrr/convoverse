@@ -195,9 +195,7 @@ export default function GetStartedPage() {
 
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
                 Navigate through the cosmos of communication. Connect
-                <span className="text-primary font-semibold"> Slack</span>,
-                <span className="text-secondary font-semibold"> WhatsApp</span>,
-                and
+                <span className="text-primary font-semibold"> Slack</span>, and
                 <span className="text-emerald-400 font-semibold">
                   {" "}
                   Gmail

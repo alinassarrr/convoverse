@@ -56,14 +56,15 @@ export class IntegrationsService {
     const baseUrl = 'https://accounts.google.com/o/oauth2/auth';
     const params = new URLSearchParams({
       client_id: clientId,
-      redirect_uri: 'http://localhost:3000/integrations/rest/oauth2-credential/callback',
+      redirect_uri:
+        'http://localhost:3000/integrations/rest/oauth2-credential/callback',
       scope: scopes,
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent',
       state,
     });
-    
+
     const authUrl = `${baseUrl}?${params.toString()}`;
 
     return authUrl;
@@ -367,15 +368,12 @@ export class IntegrationsService {
 
     const status = {
       slack: false,
-      whatsapp: false,
       gmail: false,
     };
 
     integrations.forEach((integration) => {
       if (integration.provider === IntegrationProvider.SLACK) {
         status.slack = true;
-      } else if (integration.provider === IntegrationProvider.WHATSAPP) {
-        status.whatsapp = true;
       } else if (integration.provider === IntegrationProvider.GMAIL) {
         status.gmail = true;
       }
@@ -384,11 +382,11 @@ export class IntegrationsService {
     return { status, integrations };
   }
 
-  async connectFakeIntegration(userId: string, provider: 'whatsapp' | 'gmail') {
+  async connectFakeIntegration(userId: string, provider: 'gmail') {
     const providerEnum =
-      provider === 'whatsapp'
-        ? IntegrationProvider.WHATSAPP
-        : IntegrationProvider.GMAIL;
+      provider === 'gmail'
+        ? IntegrationProvider.GMAIL
+        : IntegrationProvider.GMAIL; // Default to Gmail
 
     const integration = await this.IntegrationModel.findOneAndUpdate(
       { userId: new Types.ObjectId(userId), provider: providerEnum },
@@ -396,10 +394,7 @@ export class IntegrationsService {
         $set: {
           accessToken: `fake_${provider}_token_${Date.now()}`,
           tokenType: 'Bearer',
-          scope:
-            provider === 'whatsapp'
-              ? 'messages:read messages:write'
-              : 'gmail.readonly gmail.send',
+          scope: 'gmail.readonly gmail.send',
           metadata: {
             connected: true,
             connectedAt: new Date(),
@@ -420,18 +415,12 @@ export class IntegrationsService {
     };
   }
 
-  async disconnectIntegration(
-    userId: string,
-    provider: 'whatsapp' | 'gmail' | 'slack',
-  ) {
+  async disconnectIntegration(userId: string, provider: 'gmail' | 'slack') {
     let providerEnum: IntegrationProvider;
 
     switch (provider) {
       case 'slack':
         providerEnum = IntegrationProvider.SLACK;
-        break;
-      case 'whatsapp':
-        providerEnum = IntegrationProvider.WHATSAPP;
         break;
       case 'gmail':
         providerEnum = IntegrationProvider.GMAIL;
@@ -512,6 +501,81 @@ export class IntegrationsService {
 
       throw new BadRequestException(
         `Failed to send message to n8n: ${error.response?.data?.message || error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Send a reply to Gmail via n8n webhook
+   */
+  async sendGmailMessage(params: {
+    to: string;
+    messageId: string;
+    messageText: string;
+  }) {
+    const gmailWebhookUrl =
+      'http://localhost:5678/webhook/326f60b6-903e-4feb-9f33-68d9e02ff11a';
+
+    try {
+      const webhookPayload = {
+        to: params.to,
+        messageId: params.messageId,
+        messageText: params.messageText,
+      };
+
+      console.log('Sending Gmail reply via n8n:', {
+        to: params.to,
+        messageId: params.messageId,
+        textLength: params.messageText.length,
+      });
+
+      const response = await axios.post(gmailWebhookUrl, webhookPayload, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log(
+        'Gmail n8n webhook response:',
+        response.status,
+        response.statusText,
+      );
+
+      return {
+        success: true,
+        message: 'Gmail reply sent successfully via n8n',
+        to: params.to,
+        messageId: params.messageId,
+        messageText: params.messageText,
+        webhookResponse: response.data || 'OK',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Error sending Gmail message to n8n webhook:', {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        to: params.to,
+        messageId: params.messageId,
+        webhookUrl: gmailWebhookUrl,
+      });
+
+      if (error.code === 'ECONNREFUSED') {
+        throw new BadRequestException(
+          'n8n service is not available. Please check if n8n is running on localhost:5678',
+        );
+      }
+
+      if (error.code === 'ENOTFOUND') {
+        throw new BadRequestException(
+          'Cannot reach n8n service. Please check the webhook URL.',
+        );
+      }
+
+      throw new BadRequestException(
+        `Failed to send Gmail message to n8n: ${error.response?.data?.message || error.message}`,
       );
     }
   }
