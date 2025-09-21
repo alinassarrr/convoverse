@@ -4,6 +4,7 @@ import { BotIcon, Inbox } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export default function DashboardClient({
   children,
@@ -27,25 +28,32 @@ export default function DashboardClient({
             />
             <h2 className="font-bold text-2xl">ConvoVerse</h2>
           </div>
-          <nav className="flex flex-col space-y-2 p-4 gap-2">
-            <Link
-              href="/inbox"
-              className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
-                pathname === "/inbox" ? "bg-secondary" : ""
-              }`}
-            >
-              <Inbox />
-              <span className="font-semibold ml-2">Unified Inbox</span>
-            </Link>
-            <Link
-              href="/assistant"
-              className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
-                pathname === "/assistant" ? "bg-secondary" : ""
-              }`}
-            >
-              <BotIcon />
-              <span className="font-semibold ml-2">AI Assistant</span>
-            </Link>
+          <nav className="flex flex-col flex-1 space-y-2 p-4 gap-2">
+            <div className="flex flex-col space-y-2 gap-2">
+              <Link
+                href="/inbox"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/inbox" ? "bg-secondary" : ""
+                }`}
+              >
+                <Inbox />
+                <span className="font-semibold ml-2">Unified Inbox</span>
+              </Link>
+              <Link
+                href="/assistant"
+                className={`p-1 pl-2 rounded-md flex transition-colors hover:bg-secondary/50 ${
+                  pathname === "/assistant" ? "bg-secondary" : ""
+                }`}
+              >
+                <BotIcon />
+                <span className="font-semibold ml-2">AI Assistant</span>
+              </Link>
+            </div>
+            
+            {/* Logout button at bottom */}
+            <div className="mt-auto">
+              <LogoutButton />
+            </div>
           </nav>
         </aside>
       </div>
