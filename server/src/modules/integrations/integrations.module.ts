@@ -8,6 +8,7 @@ import {
   IntegrationSchema,
 } from '../../schemas/integrations.schema';
 import { SlackConfig } from 'src/config/slack.config';
+import { GmailConfig } from 'src/config/gmail.config';
 import { N8nConfig } from 'src/config/n8n.config';
 
 @Module({
@@ -18,7 +19,7 @@ import { N8nConfig } from 'src/config/n8n.config';
     ]),
   ],
   controllers: [IntegrationsController],
-  providers: [IntegrationsService, SlackConfig, N8nConfig],
+  providers: [IntegrationsService, SlackConfig, GmailConfig, N8nConfig],
   exports: [IntegrationsService],
 })
 export class IntegrationsModule {}
