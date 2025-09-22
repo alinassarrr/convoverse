@@ -11,7 +11,7 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "ConvoVerse",
   description:
-    "AI-powered unified communication platform for seamless conversations across Slack and Gmail",
+    "AI-powered unified communication platform for seamless conversations across Slack, and Gmail",
   icons: {
     icon: "/ConvoVerse_logo.png",
     shortcut: "/ConvoVerse_logo.png",

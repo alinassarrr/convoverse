@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Conversation } from "@/types/conversation";
 import { ConversationsAPI } from "@/lib/conversations";
 import { socketService } from "@/lib/socket";
 import { SlackIcon } from "@/components/icons/SlackIcon";
 import { GmailIcon } from "@/components/icons/GmailIcon";
-import { getInitials } from "@/lib/gmail-utils";
+import { getInitials, parseGmailUser } from "@/lib/gmail-utils";
 
 interface ConversationsListProps {
   platform?: "slack" | "gmail" | "all";
@@ -170,6 +170,35 @@ export function ConversationsList({
   };
 
   const getConversationDisplayInfo = (conversation: Conversation) => {
+    if (conversation.provider === "gmail") {
+      // Gmail-specific logic
+      let displayName = "Unknown";
+      let email = "";
+
+      // Try to parse the sender information
+      if (conversation.sender?.name) {
+        const parsed = parseGmailUser(conversation.sender.name);
+        displayName = parsed.displayName;
+        email = parsed.email;
+      } else if (conversation.sender?.display_name) {
+        displayName = conversation.sender.display_name;
+      } else if (conversation.name) {
+        // If no sender info, try to parse from conversation name
+        const parsed = parseGmailUser(conversation.name);
+        displayName = parsed.displayName;
+        email = parsed.email;
+      }
+
+      return {
+        displayName,
+        email,
+        subject: conversation.name || "",
+        initials: getInitials(displayName),
+        isEmail: true,
+        avatarColor: "#EA4335", // Gmail red
+      };
+    }
+
     // Slack display logic (unchanged)
     const displayName = conversation.is_im
       ? conversation.sender?.display_name ||
@@ -288,7 +317,6 @@ export function ConversationsList({
         if (conversation.provider === "gmail") {
           console.log("Gmail Conversation from DB:", {
             _id: conversation._id,
-            user: conversation.user,
             name: conversation.name,
             provider: conversation.provider,
             is_im: conversation.is_im,
@@ -321,11 +349,21 @@ export function ConversationsList({
                         : conversation.name
                     }
                   />
-                  {!conversation.is_im && (
-                    <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-medium">
-                      {conversation.name?.charAt(0)?.toUpperCase() || "#"}
-                    </div>
-                  )}
+                  <AvatarFallback
+                    className="bg-primary/20 text-sm font-medium"
+                    style={{
+                      backgroundColor:
+                        conversation.provider === "gmail"
+                          ? "#ec4899"
+                          : undefined,
+                      color:
+                        conversation.provider === "gmail" ? "white" : undefined,
+                    }}
+                  >
+                    {conversation.is_im
+                      ? displayInfo.initials
+                      : conversation.name?.charAt(0)?.toUpperCase() || "#"}
+                  </AvatarFallback>
                 </Avatar>
                 {/* Platform indicator */}
                 <div

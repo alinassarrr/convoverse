@@ -149,19 +149,31 @@ export class IntegrationsController {
     );
   }
 
-  @ApiOperation({ summary: 'Connect Gmail integration (fake for demo)' })
+  @ApiOperation({ summary: 'Handle n8n OAuth2 credential callback' })
   @ApiResponse({
-    status: 200,
-    description: 'Gmail integration connected successfully',
+    status: 302,
+    description: 'Redirects to frontend integration page',
   })
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(AuthGuard)
-  @Post('gmail/connect-fake')
-  async connectGmailFake(@Req() req: AuthenticatedRequest) {
-    return this.integrationsService.connectFakeIntegration(
-      req.user.userId,
-      'gmail',
-    );
+  @Get('rest/oauth2-credential/callback')
+  async handleOAuth2CredentialCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Process Gmail OAuth callback to exchange code for tokens
+      await this.integrationsService.handleGmailCallback(code, state);
+
+      // Trigger Gmail sync webhook
+      await this.integrationsService.handleGmailSync();
+
+      // Redirect to frontend integration page with success message
+      return res.redirect('http://localhost:3001/integration?gmail=connected');
+    } catch (error) {
+      console.error('OAuth2 credential callback error:', error);
+      // Redirect to frontend integration page with error message
+      return res.redirect('http://localhost:3001/integration?gmail=error');
+    }
   }
 
   @ApiOperation({ summary: 'Disconnect Gmail integration' })
