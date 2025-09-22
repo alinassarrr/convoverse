@@ -35,7 +35,7 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 <!-- Project Highlights -->
 <img src="./readme/title4.svg"/>
 
-## ✨ ConvoVerse Key Features  
+## ConvoVerse Key Features  
 
 - 🌐 **One Hub for All Conversations**  
 Bring Slack, Gmail, and more into a single hub. Connect your account with just one click and enjoy seamless, real-time syncing across all platforms.  
