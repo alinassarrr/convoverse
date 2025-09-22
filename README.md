@@ -13,7 +13,9 @@
 <img src="./readme/title3.svg"/>
 | ER Diagram                         |
 | --------------------------------------- |
-| ![Landing](./readme/demo/ER.png) |
+| ![Landing](./readme/demo/LandingPage.png) |
+
+
 <br><br>
 
 <!-- Project Highlights -->
