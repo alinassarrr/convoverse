@@ -21,7 +21,7 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 ## ER Diagram
 <img src="./readme/demo/ER.png"/>  
 
-## System Design
+## System Architecture
 <img src="./readme/demo/component.png"/>
 
 ## N8N Automation Workflow
@@ -106,7 +106,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- Development & Testing -->
 <img src="./readme/title6.svg"/>
 
-## Services, Validation and Testing
+### Services, Validation and Testing
 |Testing                        |
 | ------------------------------------- |
 |![fsdaf](./readme/demo/test.png) |
@@ -115,7 +115,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 | --------------------------------------- | ------------------------------------- |
 | ![Landing](./readme/demo/service.png) | ![fsdaf](./readme/demo/validation.png) | 
 
-## Linear Workflow  
+### Linear Workflow  
 To keep development structured and transparent, every feature and bug fix was tracked through **Linear** and linked directly with GitHub:  
 
 - 🔀 **Branching:** Each ticket started with a dedicated Git branch, keeping changes isolated and organized.  
@@ -136,7 +136,7 @@ To keep development structured and transparent, every feature and bug fix was tr
 <!-- Deployment -->
 <img src="./readme/title7.svg"/>
 
-## Swagger API Documentation  
+### Swagger API Documentation  
 
 <a href="https://alinassarrr.github.io/convoverse/#/">Access the full API documentation here</a>  
 
