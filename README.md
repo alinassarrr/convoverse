@@ -121,7 +121,10 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- AI Workflow -->
 ## 🧠 AI Workflow -> Two-Agent System  
 
-<img src="./readme/demo/ai-flow.png"/>
+| AI Agents Workflow |
+| ------------------------------------- |
+|<img src="./readme/demo/ai-flow.png"/> |
+
 <br>
 ConvoVerse’s AI runs on two powerful agents:  
 one that keeps conversations summarized automatically, and another that answers your questions across all platforms.  
