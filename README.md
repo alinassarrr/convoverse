@@ -123,7 +123,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 ### Swagger API Documentation
 
-- Description here.
+- <a href="https://alinassarrr.github.io/convoverse/#/">Here you can access the whole APIs</a>
 
 
 | GET Conversations API                 | POST Ask AI Assistant API             | GET Latest Summary API                |
