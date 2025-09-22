@@ -37,27 +37,38 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
 
       // Listen for new messages in this conversation
       const handleNewMessage = (data: unknown) => {
-        if (data.conversationId === conversation.channel) {
-          console.log("New message received:", data.message);
+        const messageData = data as { conversationId?: string; message?: unknown };
+        if (messageData.conversationId === conversation.channel) {
+          console.log("New message received:", messageData.message);
 
           // Transform the incoming message to match our Message type
+          const message = messageData.message as {
+            ts?: string;
+            text?: string;
+            user?: string;
+            senderName?: string;
+            senderDisplayName?: string;
+            senderAvatar?: string;
+            direction?: string;
+          };
+          
           const newMessage: Message = {
-            ts: data.message.ts,
+            ts: message.ts || '',
             text: ConversationsAPI.cleanMessageText(
-              data.message.text || "No text"
+              message.text || "No text"
             ),
             sender: {
-              id: data.message.user || "unknown",
-              name: data.message.senderName || "Unknown",
+              id: message.user || "unknown",
+              name: message.senderName || "Unknown",
               display_name:
-                data.message.senderDisplayName ||
-                data.message.senderName ||
+                message.senderDisplayName ||
+                message.senderName ||
                 "Unknown",
-              avatar: data.message.senderAvatar,
+              avatar: message.senderAvatar,
             },
             // Use backend-provided direction field to determine message source
-            isFromUser: data.message.direction === "out",
-            status: "delivered",
+            isFromUser: message.direction === "out",
+            status: "delivered" as const,
           };
 
           // Add the new message to the current messages
@@ -139,37 +150,55 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
 
       // Transform API response to Message format
       const transformedMessages: Message[] = messagesData.map((msg: unknown) => {
+        const messageData = msg as {
+          ts?: string;
+          text?: string;
+          user?: string;
+          sender?: {
+            id?: string;
+            name?: string;
+            display_name?: string;
+            avatar?: string;
+            email?: string;
+          };
+          senderName?: string;
+          direction?: string;
+          type?: string;
+          channel?: string;
+          provider?: string;
+        };
+        
         // Parse Gmail user if this is a Gmail message
         let parsedSender = null;
-        if (conversation.provider === "gmail" && msg.user) {
-          parsedSender = parseGmailUser(msg.user);
+        if (conversation.provider === "gmail" && messageData.user) {
+          parsedSender = parseGmailUser(messageData.user);
         }
 
         return {
-          ts: msg.ts,
-          text: ConversationsAPI.cleanMessageText(msg.text || "No text"),
+          ts: messageData.ts || '',
+          text: ConversationsAPI.cleanMessageText(messageData.text || "No text"),
           sender: {
-            id: msg.sender?.id || msg.user || "unknown",
+            id: messageData.sender?.id || messageData.user || "unknown",
             name:
               parsedSender?.name ||
-              msg.sender?.name ||
-              msg.senderName ||
+              messageData.sender?.name ||
+              messageData.senderName ||
               "Unknown",
             display_name:
               parsedSender?.displayName ||
-              msg.sender?.display_name ||
-              msg.senderName ||
+              messageData.sender?.display_name ||
+              messageData.senderName ||
               "Unknown",
-            avatar: msg.sender?.avatar,
-            email: parsedSender?.email || msg.sender?.email,
+            avatar: messageData.sender?.avatar,
+            email: parsedSender?.email || messageData.sender?.email,
           },
-          isFromUser: msg.direction === "out",
-          status: "delivered",
+          isFromUser: messageData.direction === "out",
+          status: "delivered" as const,
           // Gmail-specific fields
-          type: msg.type, // Email subject
-          user: msg.user, // Gmail format: "Name <email>"
-          channel: msg.channel,
-          provider: msg.provider || conversation.provider,
+          type: messageData.type, // Email subject
+          user: messageData.user, // Gmail format: "Name <email>"
+          channel: messageData.channel,
+          provider: (messageData.provider as "slack" | "whatsapp" | "gmail") || conversation.provider,
         };
       });
 
@@ -186,22 +215,34 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   }
 
   const handleOptimisticMessage = (messageData: unknown) => {
+    const data = messageData as {
+      ts?: string;
+      text?: string;
+      sender?: unknown;
+      isFromUser?: boolean;
+    };
+    
     const optimisticMessage: Message = {
-      ts: messageData.ts,
-      text: messageData.text,
-      sender: messageData.sender,
-      isFromUser: messageData.isFromUser,
-      status: "sending",
+      ts: data.ts || '',
+      text: data.text || '',
+      sender: data.sender as Message['sender'],
+      isFromUser: data.isFromUser || false,
+      status: "sent" as const,
     };
 
     setOptimisticMessages((prev) => [...prev, optimisticMessage]);
   };
 
   const handleMessageSent = (messageData: unknown) => {
-    if (messageData.error) {
+    const data = messageData as {
+      error?: unknown;
+      optimisticId?: string;
+    };
+    
+    if (data.error) {
       // Remove optimistic message on error
       setOptimisticMessages((prev) =>
-        prev.filter((msg) => msg.ts !== messageData.optimisticId)
+        prev.filter((msg) => msg.ts !== data.optimisticId)
       );
     }
     // For successful sends, optimistic messages will be removed when real message arrives

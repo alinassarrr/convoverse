@@ -124,15 +124,6 @@ export default function InboxPage() {
     }
   }
 
-  const handleSendMessage = (content: string) => {
-    console.log(
-      "Sending message:",
-      content,
-      "to conversation:",
-      selectedConversation?._id
-    );
-  };
-
   async function loadConversationCounts() {
     try {
       // Load conversations for all platforms
@@ -173,7 +164,6 @@ export default function InboxPage() {
       {/* Chat Messages */}
       <ChatMessages
         conversation={selectedConversation}
-        onSendMessage={handleSendMessage}
       />
 
       <aside className="w-64 bg-background border-l flex flex-col h-full max-h-full overflow-hidden">

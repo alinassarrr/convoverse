@@ -38,11 +38,14 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorCause = error instanceof Error ? error.cause : undefined;
+    
     console.error("Gmail sync webhook error:", {
-      error: error.message,
+      error: errorMessage,
     });
 
-    if (error.cause?.code === "ECONNREFUSED") {
+    if (errorCause && typeof errorCause === 'object' && 'code' in errorCause && errorCause.code === "ECONNREFUSED") {
       return NextResponse.json(
         {
           message:
@@ -52,7 +55,7 @@ export async function GET() {
       );
     }
 
-    if (error.cause?.code === "ENOTFOUND") {
+    if (errorCause && typeof errorCause === 'object' && 'code' in errorCause && errorCause.code === "ENOTFOUND") {
       return NextResponse.json(
         { message: "Cannot reach n8n service. Please check the webhook URL." },
         { status: 503 }
@@ -61,8 +64,8 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        message: `Failed to trigger Gmail sync: ${error.message}`,
-        error: error.message,
+        message: `Failed to trigger Gmail sync: ${errorMessage}`,
+        error: errorMessage,
       },
       { status: 500 }
     );

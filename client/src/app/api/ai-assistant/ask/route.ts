@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the JWT token from httpOnly cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("token");
 
     if (!token) {

@@ -148,10 +148,11 @@ export default function IntegrationsPage() {
         throw new Error(data.message || "Sync failed");
       }
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error("Sync failed", {
         id: "slack-sync",
         description:
-          error.message ||
+          errorMessage ||
           "Failed to sync Slack data. You can try again later.",
         duration: 5000,
       });
@@ -198,10 +199,11 @@ export default function IntegrationsPage() {
         throw new Error(data.message || "Sync failed");
       }
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error("Gmail sync failed", {
         id: "gmail-sync",
         description:
-          error.message ||
+          errorMessage ||
           "Failed to sync Gmail data. You can try again later.",
         duration: 5000,
       });
