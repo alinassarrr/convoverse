@@ -1,7 +1,3 @@
-<img width="620" height="416" alt="test" src="https://github.com/user-attachments/assets/c1a83921-d644-4487-bd83-07efeabaf260" /><img src="./readme/title1.svg"/>
-
-<br><br>
-
 <!-- project overview -->
 <img src="./readme/title2.svg"/>
 
