@@ -138,8 +138,13 @@ To keep development structured and transparent, every feature and bug fix was tr
 
 ### Swagger API Documentation  
 
-<a href="https://alinassarrr.github.io/convoverse/#/">Here you can access the whole APIs</a>  
-The Swagger UI provides a **live, interactive interface** where you can explore all the REST APIs, check request/response formats, test endpoints directly in the browser, and view detailed documentation of each route.  
+<a href="https://alinassarrr.github.io/convoverse/#/">Access the full API documentation here</a>  
+
+The Swagger UI provides an **interactive playground** for developers:  
+- 📖 Explore available endpoints with detailed descriptions.  
+- 🛠️ Test requests and view real-time responses directly in the browser.  
+- 🔑 Understand required parameters, authentication, and request/response formats.  
+- 🚀 Speeds up integration and ensures consistent use of APIs across the project.  
 
 | GET Conversations API                 | POST Ask AI Assistant API             | GET Latest Summary API                |
 | --------------------------------------- | ------------------------------------- | ------------------------------------- |
