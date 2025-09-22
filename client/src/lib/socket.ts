@@ -65,21 +65,21 @@ class SocketService {
   }
 
   // Listen for new messages
-  onNewMessage(callback: (data: any) => void) {
+  onNewMessage(callback: (data: unknown) => void) {
     if (this.socket) {
       this.socket.on("new_message", callback);
     }
   }
 
   // Listen for conversation updates
-  onConversationUpdate(callback: (data: any) => void) {
+  onConversationUpdate(callback: (data: unknown) => void) {
     if (this.socket) {
       this.socket.on("conversation_updated", callback);
     }
   }
 
   // Listen for conversation list updates
-  onConversationListUpdate(callback: (data: any) => void) {
+  onConversationListUpdate(callback: (data: unknown) => void) {
     if (this.socket) {
       this.socket.on("conversation_list_updated", callback);
     }

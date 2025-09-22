@@ -20,7 +20,7 @@ export const useSocket = () => {
     socketRef.current.leaveConversation(conversationId);
   }, []);
 
-  const onNewMessage = useCallback((callback: (data: any) => void) => {
+  const onNewMessage = useCallback((callback: (data: unknown) => void) => {
     socketRef.current.onNewMessage(callback);
     
     return () => {
@@ -28,7 +28,7 @@ export const useSocket = () => {
     };
   }, []);
 
-  const onConversationUpdate = useCallback((callback: (data: any) => void) => {
+  const onConversationUpdate = useCallback((callback: (data: unknown) => void) => {
     socketRef.current.onConversationUpdate(callback);
     
     return () => {
@@ -36,7 +36,7 @@ export const useSocket = () => {
     };
   }, []);
 
-  const onConversationListUpdate = useCallback((callback: (data: any) => void) => {
+  const onConversationListUpdate = useCallback((callback: (data: unknown) => void) => {
     socketRef.current.onConversationListUpdate(callback);
     
     return () => {

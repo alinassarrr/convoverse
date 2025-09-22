@@ -26,7 +26,8 @@ export class SignUpDTO {
 
   @ApiProperty({
     example: 'MySecureP@ss123',
-    description: 'Password must be at least 8 characters with uppercase, lowercase, and number/special character',
+    description:
+      'Password must be at least 8 characters with uppercase, lowercase, and number/special character',
   })
   @IsNotEmpty()
   @IsString()
