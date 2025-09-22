@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main, dev, new]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_SERVER: ${{ github.repository }}/server
-  IMAGE_NAME_CLIENT: ${{ github.repository }}/client
 
 jobs:
   # Test Server
@@ -117,125 +113,3 @@ jobs:
       - name: Audit client dependencies
         working-directory: ./client
         run: npm audit --audit-level moderate
-
-  # Build and Push Docker Images
-  build-and-push:
-    needs: [test-server, test-client, security-audit]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for server
-        id: meta-server
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Extract metadata for client
-        id: meta-client
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CLIENT }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push server image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./server
-          file: ./server/Dockerfile
-          target: production
-          push: true
-          tags: ${{ steps.meta-server.outputs.tags }}
-          labels: ${{ steps.meta-server.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push client image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./client
-          file: ./client/Dockerfile
-          target: production
-          push: true
-          tags: ${{ steps.meta-client.outputs.tags }}
-          labels: ${{ steps.meta-client.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # Deploy to Production (optional)
-  deploy:
-    needs: [build-and-push]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: production
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to production
-        run: |
-          echo "Deploy to production server"
-          # Add your deployment commands here
-          # Example: 
-          # - SSH to production server
-          # - Pull latest images
-          # - Update docker-compose
-          # - Restart services
-
-          # ssh user@production-server << 'EOF'
-          # cd /path/to/app
-          # docker-compose -f docker-compose.prod.yml pull
-          # docker-compose -f docker-compose.prod.yml up -d
-          # EOF
-
-  # Cleanup old images
-  cleanup:
-    needs: [deploy]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Delete old packages
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "server"
-          package-type: "container"
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete old packages
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "client"
-          package-type: "container"
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: true
-          token: ${{ secrets.GITHUB_TOKEN }}
