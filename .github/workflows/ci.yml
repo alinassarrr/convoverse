@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
 
 env:
   REGISTRY: ghcr.io
@@ -186,55 +186,3 @@ jobs:
           labels: ${{ steps.meta-client.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  # Deploy to Production (optional)
-  deploy:
-    needs: [build-and-push]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: production
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to production
-        run: |
-          echo "Deploy to production server"
-          # Add your deployment commands here
-          # Example: 
-          # - SSH to production server
-          # - Pull latest images
-          # - Update docker-compose
-          # - Restart services
-
-          # ssh user@production-server << 'EOF'
-          # cd /path/to/app
-          # docker-compose -f docker-compose.prod.yml pull
-          # docker-compose -f docker-compose.prod.yml up -d
-          # EOF
-
-  # Cleanup old images
-  cleanup:
-    needs: [deploy]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Delete old packages
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "server"
-          package-type: "container"
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete old packages
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "client"
-          package-type: "container"
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: true
-          token: ${{ secrets.GITHUB_TOKEN }}
