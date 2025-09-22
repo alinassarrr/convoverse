@@ -73,7 +73,7 @@ Go beyond search. Chat with an AI that remembers everything across platforms ask
 ### Live Integration Demo
 | Integration               |       
 | ----------------------------------- | 
-| ![Landing](./readme/int.gif) |
+| ![Landing](./readme/int-live.gif) |
 
 ### Live Conversation Demo
 | Live Chat with Slack              |       
