@@ -20,16 +20,15 @@
 <!-- Project Highlights -->
 <img src="./readme/title4.svg"/>
 
-### ConvoVerse Sexy Features
-🚀 Key Features
+### 🚀 ConvoVerse Sexy Features
 
-🌐 **Multi-Platform Integrations**
+- 🌐 **Multi-Platform Integrations**
 Bring all your conversations together! Seamlessly sync Slack, Gmail, and WhatsApp into one powerful, unified workspace.
 
-⚡ **Real-Time Messaging**
+- ⚡ **Real-Time Messaging**
 Don’t just sync interact. Send and receive messages as a real user with instant, real-time updates across every channel.
 
-🧠 **AI Assistant Your Second Brain**
+- 🧠 **AI Assistant Your Second Brain**
 Go beyond search. Chat with an AI that remembers everything across platforms ask about tasks, deadlines, or decisions and get actionable insights instantly.
 
 <br><br>
