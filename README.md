@@ -23,6 +23,12 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 ### ER Diagram
 <img src="./readme/demo/ER.png"/>
 
+### N8N Automation Workflow
+## Slack  
+<img src="./readme/demo/Slack-n8n.png"/>
+## Gmail  
+<img src="./readme/demo/Gmail-n8n.png"/>
+
 <br><br>
 
 <!-- Project Highlights -->
