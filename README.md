@@ -35,16 +35,20 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 <!-- Project Highlights -->
 <img src="./readme/title4.svg"/>
 
-### 🚀 ConvoVerse Sexy Features
+## ✨ ConvoVerse Key Features  
 
-- 🌐 **Multi-Platform Integrations**
-Bring all your conversations together! Seamlessly sync Slack and Gmail into one powerful, unified workspace.
+- 🌐 **One Hub for All Conversations**  
+Bring Slack, Gmail, and more into a single hub. Connect your account with just one click and enjoy seamless, real-time syncing across all platforms.  
 
-- ⚡ **Real-Time Messaging**
-Don’t just sync interact. Send and receive messages as a real user with instant, real-time updates across every channel.
+- 🧾 **AI Side Assistant (Per Conversation)**  
+Every conversation comes with its own AI-powered sidekick that summarizes what’s happening, highlights key points, and extracts tasks, events, and actions directly from the chat.  
 
-- 🧠 **AI Assistant Your Second Brain**
-Go beyond search. Chat with an AI that remembers everything across platforms ask about tasks, deadlines, or decisions and get actionable insights instantly.
+- 🧠 **Global AI Assistant – Your Second Brain**  
+Go beyond single conversations. Ask the global assistant about tasks, deadlines, or decisions across *all* your platforms no matter where the conversation started.  
+
+- ⚡ **Real-Time Replying**  
+Don’t just read, act. Reply to messages directly from ConvoVerse as if you were replying on Slack, Gmail, or any connected platform, making collaboration seamless and natural.  
+
 
 <br><br>
 
