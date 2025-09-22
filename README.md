@@ -53,7 +53,7 @@
 ### Slack Conversations Screen                  
 | Slack Chat Screen                       |  Gmail Chat Screen                      |
 | --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/Channel.png)| ![fsdaf](./readme/demo/Mail.png) |
+| ![Landing](./readme/demo/Channel.png)   | ![Landing](./readme/demo/Mail.png) |
 
 
 <br><br>
