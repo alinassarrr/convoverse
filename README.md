@@ -26,18 +26,18 @@
 <!-- Demo -->
 <img src="./readme/title5.svg"/>
 
-### User Screens (Mobile)
+### Landing Screen
 
-| Login screen                            | Register screen                       | Register screen                       |
-| --------------------------------------- | ------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+| Landing Screen                          |
+| --------------------------------------- |
+| ![Landing](./readme/demo/LandingPage.png) |
 
 
-### Admin Screens (Web)
+### Login/Signup Screens
 
-| Login screen                            | Register screen                       |
+| Login screen                            | Signup screen                       |
 | --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+| ![Landing](./readme/demo/Login.png) | ![fsdaf](./readme/demo/Signup.png) |
 
 
 <br><br>
