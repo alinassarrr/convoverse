@@ -137,7 +137,7 @@ export function MessageInput({
                 ? `Reply to ${conversation.name || "email"}...`
                 : `Message ${
                     conversation.is_im
-                      ? conversation.sender.display_name
+                      ? conversation.sender?.display_name || "recipient"
                       : `#${conversation.name}`
                   }...`
             }

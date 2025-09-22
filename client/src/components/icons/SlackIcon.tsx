@@ -1,6 +1,11 @@
-export function SlackIcon() {
+interface SlackIconProps {
+  className?: string;
+}
+
+export function SlackIcon({ className }: SlackIconProps) {
   return (
     <svg
+      className={className}
       xmlns="http://www.w3.org/2000/svg"
       x="0px"
       y="0px"

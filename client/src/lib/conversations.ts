@@ -176,11 +176,14 @@ export class ConversationsAPI {
     text: string;
     isDM: boolean;
     provider?: string;
-    conversation?: unknown;
+    conversation?: Conversation;
   }) {
     try {
       // Route to appropriate sending method based on provider
       if (params.provider === "gmail") {
+        if (!params.conversation) {
+          throw new Error("Conversation data required for Gmail messages");
+        }
         return this.sendGmailMessage({
           channel: params.channel,
           text: params.text,
@@ -222,13 +225,13 @@ export class ConversationsAPI {
   static async sendGmailMessage(params: {
     channel: string;
     text: string;
-    conversation: unknown;
+    conversation: Conversation;
   }) {
     try {
       // Extract Gmail recipient from conversation user field
       // conversation.user format: "Name <email@domain.com>"
       let recipientEmail = "";
-      if (params.conversation?.user) {
+      if (params.conversation.user) {
         const match = params.conversation.user.match(/<(.+?)>/);
         recipientEmail = match ? match[1] : params.conversation.user;
       }
