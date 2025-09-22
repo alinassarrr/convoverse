@@ -126,8 +126,8 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 - Description here.
 
 
-  | GET Conversations API                            | POST Ask AI Assistant API                       | GET Latest Summary API                      |
+| GET Conversations API                 | POST Ask AI Assistant API             | GET Latest Summary API                |
 | --------------------------------------- | ------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/api2.png) | ![fsdaf](./readme/demo/api3.png) | ![fsdaf](./readme/demo/api1.png) |
+| ![Landing](./readme/demo/api2.png)       | ![fsdaf](./readme/demo/api3.png) | ![fsdaf](./readme/demo/api1.png)     |
 
 <br><br>
