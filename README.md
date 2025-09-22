@@ -17,7 +17,10 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 <img src="./readme/title3.svg"/>
 
 ## ER Diagram
-<img src="./readme/demo/ER.png"/>
+<img src="./readme/demo/ER.png"/>  
+
+## System Design
+<img src="./readme/demo/component.png"/>
 
 ## N8N Automation Workflow
 ### Slack  
