@@ -116,16 +116,19 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 | ![Landing](./readme/demo/service.png) | ![fsdaf](./readme/demo/validation.png) | 
 
 ### Linear Workflow  
-Created a dedicated Git branch named after the ticket to keep changes isolated and organized.  
-Committed code regularly with descriptive messages referencing the ticket for clear traceability.  
-Pushed changes to the remote repository to share progress with the team.  
-Opened a Pull Request (PR) for code review, ensuring quality and collaboration.  
-Linked the PR to the Linear ticket, automatically updating its status during the workflow.  
-Merged the PR, which moved the ticket to **“Done”** in Linear, completing the development cycle.  
+To keep development structured and transparent, every feature and bug fix was tracked through **Linear** and linked directly with GitHub:  
+
+- 🔀 **Branching:** Each ticket started with a dedicated Git branch, keeping changes isolated and organized.  
+- 📝 **Commits:** Code was committed regularly with clear, descriptive messages referencing the Linear ticket.  
+- 📤 **Collaboration:** Changes were pushed to the remote repository, ensuring the team stayed in sync.  
+- 🔍 **Pull Requests:** A PR was opened for review, enabling feedback, discussion, and quality checks.  
+- 🔗 **Integration with Linear:** PRs were linked to their tickets, automatically updating progress and status.  
+- ✅ **Done:** Once merged, the ticket was moved to **“Done”**, completing the development cycle smoothly.  
 
 | Linear Workflow |
 | ------------------------------------- |
-| ![Linear Placeholder](./readme/demo/linear.png) |
+| ![Linear Placeholder](./readme/demo/Linear.png) |
+
 
 
 <br><br>
