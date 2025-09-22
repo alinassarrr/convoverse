@@ -70,11 +70,20 @@ Go beyond search. Chat with an AI that remembers everything across platforms ask
 | --------------------------------------- | ------------------------------------- |
 | ![Landing](./readme/Chat-Summary.png)   | ![fsdaf](./readme/Chat-Actions.png) |
 
+### Live Integration Demo
+| Integration               |       
+| ----------------------------------- | 
+| ![Landing](./readme/int.gif) |
 
-### Live Demo
-| Live Chat with Slack                            | Validation                       | Testing                        |
-| --------------------------------------- | ------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/inbox-live.gif) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+### Live Conversation Demo
+| Live Chat with Slack              |       
+| ----------------------------------- | 
+| ![Landing](./readme/inbox-live.gif) |
+
+### Live AI Assistant Demo
+| Live Chat with AI assistant              |       
+| ----------------------------------- | 
+| ![Landing](./readme/ai-live.gif) |
 <br><br>
 
 <!-- Development & Testing -->
