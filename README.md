@@ -11,9 +11,8 @@
 
 <!-- System Design -->
 <img src="./readme/title3.svg"/>
-| ER Diagram                         |
-| --------------------------------------- |
-| ![Landing](./readme/demo/LandingPage.png) |
+### ER Diagram
+<img src="./readme/demo/ER.png"/>
 
 
 <br><br>
