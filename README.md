@@ -11,7 +11,9 @@
 
 <!-- System Design -->
 <img src="./readme/title3.svg"/>
-
+| ER Diagram                         |
+| --------------------------------------- |
+| ![Landing](./readme/demo/ER.png) |
 <br><br>
 
 <!-- Project Highlights -->
@@ -55,6 +57,10 @@
 | --------------------------------------- | ------------------------------------- |
 | ![Landing](./readme/demo/Channel.png)   | ![Landing](./readme/demo/Mail.png) |
 
+### Conversation AI Assistant Screen                  
+| Summary Screen                       |  Actions Screen                      |
+| --------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/Chat-Summary.png)   | ![Landing](./readme/demo/Chat-Actions.png) |
 
 <br><br>
 
