@@ -68,7 +68,7 @@ Go beyond search. Chat with an AI that remembers everything across platforms ask
 ### Conversation AI Assistant Screen                  
 | Summary Screen                       |  Actions Screen                      |
 | --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/Chat-Summary.png)   | ![fsdaf](./readme/demo/Chat-Actions.png) |
+| ![Landing](./readme/demo/Channel.png)   | ![fsdaf](./readme/demo/Chat-Actions.png) |
 
 <br><br>
 
