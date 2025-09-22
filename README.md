@@ -8,7 +8,7 @@
 > **ConvoVerse** is an AI-powered solution that brings all your conversations in one place.
 It unifies your Slack messages and Gmail threads into a single, intelligent dashboard, so you never waste time jumping between apps.
 
-> 💡 The Problem
+> 💡 The Problem  
 Important conversations are scattered, tasks get buried, and deadlines slip through the cracks.
 
 > ✅ The Solution  
