@@ -9,7 +9,7 @@ export interface Message {
     email?: string; // Gmail: extracted from user field
   };
   isFromUser: boolean;
-  status?: "sent" | "delivered" | "read" | "failed";
+  status?: "sending" | "sent" | "delivered" | "read" | "failed";
   // Gmail-specific fields
   type?: string; // Gmail: Email subject
   user?: string; // Gmail: "Name <email@domain.com>" format

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +36,7 @@ const integrations = [
 
 type StatusMap = Record<Provider, boolean>;
 
-export default function IntegrationsPage() {
+function IntegrationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<StatusMap>({
@@ -147,11 +147,12 @@ export default function IntegrationsPage() {
       } else {
         throw new Error(data.message || "Sync failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error("Sync failed", {
         id: "slack-sync",
         description:
-          error.message ||
+          errorMessage ||
           "Failed to sync Slack data. You can try again later.",
         duration: 5000,
       });
@@ -197,11 +198,12 @@ export default function IntegrationsPage() {
       } else {
         throw new Error(data.message || "Sync failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error("Gmail sync failed", {
         id: "gmail-sync",
         description:
-          error.message ||
+          errorMessage ||
           "Failed to sync Gmail data. You can try again later.",
         duration: 5000,
       });
@@ -542,5 +544,26 @@ export default function IntegrationsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense
+function IntegrationsLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center gap-2">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span>Loading integrations...</span>
+      </div>
+    </div>
+  );
+}
+
+// Default export with Suspense wrapper
+export default function IntegrationsPageWrapper() {
+  return (
+    <Suspense fallback={<IntegrationsLoading />}>
+      <IntegrationsPage />
+    </Suspense>
   );
 }

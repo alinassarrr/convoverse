@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 interface MessageInputProps {
   conversation: Conversation;
-  onMessageSent?: (message: any) => void;
-  onOptimisticMessage?: (message: any) => void;
+  onMessageSent?: (message: unknown) => void;
+  onOptimisticMessage?: (message: unknown) => void;
 }
 
 export function MessageInput({
@@ -137,7 +137,7 @@ export function MessageInput({
                 ? `Reply to ${conversation.name || "email"}...`
                 : `Message ${
                     conversation.is_im
-                      ? conversation.sender.display_name
+                      ? conversation.sender?.display_name || "recipient"
                       : `#${conversation.name}`
                   }...`
             }

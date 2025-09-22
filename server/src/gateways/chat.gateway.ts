@@ -100,7 +100,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       summary,
       timestamp: new Date().toISOString(),
     });
-    this.logger.log(`Emitted summary update for conversation ${conversationId}`);
+    this.logger.log(
+      `Emitted summary update for conversation ${conversationId}`,
+    );
   }
 
   // Emit to all clients (for global updates)
