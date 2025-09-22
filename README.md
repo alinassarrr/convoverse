@@ -124,7 +124,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <img src="./readme/demo/ai-flow.png"/>
 <br>
 ConvoVerse’s AI runs on two powerful agents:  
-one that **keeps conversations summarized automatically**, and another that **answers your questions across all platforms**.  
+one that keeps conversations summarized automatically, and another that answers your questions across all platforms.  
 
 ---
 
@@ -187,7 +187,7 @@ Together, these agents act as your **conversation brain**:
 - No tasks or deadlines slip through the cracks  
 - Instant answers, no matter where the info lives  
 - Smarter over time with continuous context building  
-
+---
  <br><br>
  
 ### Linear Workflow  
