@@ -48,7 +48,7 @@ Go beyond single conversations. Ask the global assistant about tasks, deadlines,
 - ⚡ **Real-Time Replying**  
 Don’t just read, act. Reply to messages directly from ConvoVerse as if you were replying on Slack, Gmail, or any connected platform, making collaboration seamless and natural.  
 
-
+<img src="./readme/demo/features.png"/>
 <br><br>
 
 <!-- Demo -->
