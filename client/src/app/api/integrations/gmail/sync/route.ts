@@ -37,7 +37,7 @@ export async function GET() {
       webhookResponse: responseData || "OK",
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Gmail sync webhook error:", {
       error: error.message,
     });

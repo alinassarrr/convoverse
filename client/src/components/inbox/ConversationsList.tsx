@@ -60,7 +60,7 @@ export function ConversationsList({
     loadConversations();
 
     // Listen for conversation list updates
-    const handleConversationListUpdate = (data: any) => {
+    const handleConversationListUpdate = (data: unknown) => {
       console.log("Conversation list update received:", data);
 
       if (data.operationType === "insert") {

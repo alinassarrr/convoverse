@@ -147,7 +147,7 @@ export default function IntegrationsPage() {
       } else {
         throw new Error(data.message || "Sync failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Sync failed", {
         id: "slack-sync",
         description:
@@ -197,7 +197,7 @@ export default function IntegrationsPage() {
       } else {
         throw new Error(data.message || "Sync failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Gmail sync failed", {
         id: "gmail-sync",
         description:

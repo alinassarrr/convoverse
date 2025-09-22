@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 interface MessageInputProps {
   conversation: Conversation;
-  onMessageSent?: (message: any) => void;
-  onOptimisticMessage?: (message: any) => void;
+  onMessageSent?: (message: unknown) => void;
+  onOptimisticMessage?: (message: unknown) => void;
 }
 
 export function MessageInput({

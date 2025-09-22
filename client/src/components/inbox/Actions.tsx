@@ -160,8 +160,8 @@ export function ActionsComponent({ actions, loading }: ActionsProps) {
                 {/* Context */}
                 {action.context && (
                   <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded border-l-2 border-muted mt-2">
-                    <MessageCircleIcon className="w-3 h-3 inline mr-1" />"
-                    {action.context}"
+                    <MessageCircleIcon className="w-3 h-3 inline mr-1" />
+                    &quot;{action.context}&quot;
                   </div>
                 )}
               </CardContent>

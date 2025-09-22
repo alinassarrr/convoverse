@@ -36,7 +36,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       socketService.joinConversation(conversation.channel);
 
       // Listen for new messages in this conversation
-      const handleNewMessage = (data: any) => {
+      const handleNewMessage = (data: unknown) => {
         if (data.conversationId === conversation.channel) {
           console.log("New message received:", data.message);
 
@@ -138,7 +138,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       );
 
       // Transform API response to Message format
-      const transformedMessages: Message[] = messagesData.map((msg: any) => {
+      const transformedMessages: Message[] = messagesData.map((msg: unknown) => {
         // Parse Gmail user if this is a Gmail message
         let parsedSender = null;
         if (conversation.provider === "gmail" && msg.user) {
@@ -185,7 +185,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
     }
   }
 
-  const handleOptimisticMessage = (messageData: any) => {
+  const handleOptimisticMessage = (messageData: unknown) => {
     const optimisticMessage: Message = {
       ts: messageData.ts,
       text: messageData.text,
@@ -197,7 +197,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
     setOptimisticMessages((prev) => [...prev, optimisticMessage]);
   };
 
-  const handleMessageSent = (messageData: any) => {
+  const handleMessageSent = (messageData: unknown) => {
     if (messageData.error) {
       // Remove optimistic message on error
       setOptimisticMessages((prev) =>

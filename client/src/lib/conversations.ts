@@ -176,7 +176,7 @@ export class ConversationsAPI {
     text: string;
     isDM: boolean;
     provider?: string;
-    conversation?: any;
+    conversation?: unknown;
   }) {
     try {
       // Route to appropriate sending method based on provider
@@ -222,7 +222,7 @@ export class ConversationsAPI {
   static async sendGmailMessage(params: {
     channel: string;
     text: string;
-    conversation: any;
+    conversation: unknown;
   }) {
     try {
       // Extract Gmail recipient from conversation user field

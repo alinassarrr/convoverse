@@ -16,7 +16,7 @@ export async function GET() {
     // Decode JWT to get userId
     let userId: string;
     try {
-      const decoded: any = jwtDecode(token);
+      const decoded: unknown = jwtDecode(token);
       userId = decoded.userId;
       if (!userId) {
         throw new Error("No userId in token");
