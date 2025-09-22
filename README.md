@@ -115,16 +115,28 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 | --------------------------------------- | ------------------------------------- |
 | ![Landing](./readme/demo/service.png) | ![fsdaf](./readme/demo/validation.png) | 
 
+### Linear Workflow  
+Created a dedicated Git branch named after the ticket to keep changes isolated and organized.  
+Committed code regularly with descriptive messages referencing the ticket for clear traceability.  
+Pushed changes to the remote repository to share progress with the team.  
+Opened a Pull Request (PR) for code review, ensuring quality and collaboration.  
+Linked the PR to the Linear ticket, automatically updating its status during the workflow.  
+Merged the PR, which moved the ticket to **“Done”** in Linear, completing the development cycle.  
+
+| Linear Workflow |
+| ------------------------------------- |
+| ![Linear Placeholder](./readme/demo/linear.png) |
+
 
 <br><br>
 
 <!-- Deployment -->
 <img src="./readme/title7.svg"/>
 
-### Swagger API Documentation
+### Swagger API Documentation  
 
-- <a href="https://alinassarrr.github.io/convoverse/#/">Here you can access the whole APIs</a>
-
+<a href="https://alinassarrr.github.io/convoverse/#/">Here you can access the whole APIs</a>  
+The Swagger UI provides a **live, interactive interface** where you can explore all the REST APIs, check request/response formats, test endpoints directly in the browser, and view detailed documentation of each route.  
 
 | GET Conversations API                 | POST Ask AI Assistant API             | GET Latest Summary API                |
 | --------------------------------------- | ------------------------------------- | ------------------------------------- |
