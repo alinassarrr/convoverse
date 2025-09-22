@@ -40,6 +40,22 @@
 | ![Landing](./readme/demo/Login.png) | ![fsdaf](./readme/demo/Signup.png) |
 
 
+### Integration Screen
+| Integration Screen                          |
+| --------------------------------------- |
+| ![Landing](./readme/demo/Integration.png) |
+
+### Unified Inbox Screen
+| Unified Inbox Screen                       |
+| --------------------------------------- |
+| ![Landing](./readme/demo/Unified-Inbox.png) |
+
+### Slack Conversations Screen                  
+| Slack Chat Screen                       |  Gmail Chat Screen                      |
+| --------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/Channel.png)| ![fsdaf](./readme/demo/Mail.png) |
+
+
 <br><br>
 
 <!-- Development & Testing -->
