@@ -15,15 +15,22 @@
 ### ER Diagram
 <img src="./readme/demo/ER.png"/>
 
-
 <br><br>
 
 <!-- Project Highlights -->
 <img src="./readme/title4.svg"/>
 
-### Add Title Here
+### ConvoVerse Sexy Features
+🚀 Key Features
 
-- List the sexy features.
+🌐 **Multi-Platform Integrations**
+Bring all your conversations together! Seamlessly sync Slack, Gmail, and WhatsApp into one powerful, unified workspace.
+
+⚡ **Real-Time Messaging**
+Don’t just sync interact. Send and receive messages as a real user with instant, real-time updates across every channel.
+
+🧠 **AI Assistant Your Second Brain**
+Go beyond search. Chat with an AI that remembers everything across platforms ask about tasks, deadlines, or decisions and get actionable insights instantly.
 
 <br><br>
 
