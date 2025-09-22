@@ -11,14 +11,9 @@
 
 <!-- System Design -->
 <img src="./readme/title3.svg"/>
-ER Diagram
+
+### ER Diagram
 <img src="./readme/demo/ER.png"/>
-
-### Landing Screen
-
-| Landing Screen                          |
-| --------------------------------------- |
-| ![Landing](./readme/demo/LandingPage.png) |
 
 
 <br><br>
