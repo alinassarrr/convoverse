@@ -191,7 +191,7 @@ Together, these agents act as your **conversation brain**:
 - Instant answers, no matter where the info lives  
 - Smarter over time with continuous context building  
 ---
- <br><br>
+ <br>
  
 ### Linear Workflow  
 To keep development structured and transparent, every feature and bug fix was tracked through **Linear** and linked directly with GitHub:  
