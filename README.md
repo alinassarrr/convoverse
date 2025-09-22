@@ -106,7 +106,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- Development & Testing -->
 <img src="./readme/title6.svg"/>
 
-### Add Title Here
+### Services, Validation and Testing
 |Testing                        |
 | ------------------------------------- |
 |![fsdaf](./readme/demo/test.png) |
@@ -121,13 +121,13 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- Deployment -->
 <img src="./readme/title7.svg"/>
 
-### Add Title Here
+### Swagger API Documentation
 
 - Description here.
 
 
-| Postman API 1                            | Postman API 2                       | Postman API 3                        |
+  | GET Conversations API                            | POST Ask AI Assistant API                       | GET Latest Summary API                      |
 | --------------------------------------- | ------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+| ![Landing](./readme/demo/api2.png) | ![fsdaf](./readme/demo/api3.png) | ![fsdaf](./readme/demo/api1.png) |
 
 <br><br>
