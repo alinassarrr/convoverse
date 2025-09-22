@@ -5,7 +5,14 @@
 <!-- project overview -->
 <img src="./readme/title2.svg"/>
 
-> **ConvoVerse** is a smart, AI-powered dashboard that unifies Slack and Gmail in one place. It delivers instant summaries, extracts action items, automates replies and scheduling, and enables fast cross-platform search, keeping you organized, responsive, and in control.
+> **ConvoVerse** is an AI-powered solution that brings all your conversations in one place.
+It unifies your Slack messages and Gmail threads into a single, intelligent dashboard, so you never waste time jumping between apps.
+## 💡 The Problem  
+Important conversations are scattered, tasks get buried, and deadlines slip through the cracks.  
+
+## ✅ The Solution  
+**ConvoVerse** acts like your second brain. It automatically summarizes discussions, identifies action items, and surfaces the context you need keeping your team aligned, decisions faster, and critical information always visible.  
+
 
 <br><br>
 
@@ -50,15 +57,20 @@ Go beyond search. Chat with an AI that remembers everything across platforms ask
 | ![Landing](./readme/demo/Login.png) | ![fsdaf](./readme/demo/Signup.png) |
 
 
-### Integration Screen
-| Integration Screen                          |
-| --------------------------------------- |
-| ![Landing](./readme/demo/Integration.png) |
+### Live Integration Demo
+| Integration               |       
+| ----------------------------------- | 
+| ![Landing](./readme/int-live.gif) |
 
 ### Unified Inbox Screen
 | Unified Inbox Screen                       |
 | --------------------------------------- |
 | ![Landing](./readme/demo/Unified-Inbox.png) |
+
+### Live Conversation Demo
+| Live Chat with Slack              |       
+| ----------------------------------- | 
+| ![Landing](./readme/inbox-live.gif) |
 
 ### Slack Conversations Screen                  
 | Slack Chat Screen                       |  Gmail Chat Screen                      |
@@ -70,20 +82,11 @@ Go beyond search. Chat with an AI that remembers everything across platforms ask
 | --------------------------------------- | ------------------------------------- |
 | ![Landing](./readme/Chat-Summary.png)   | ![fsdaf](./readme/Chat-Actions.png) |
 
-### Live Integration Demo
-| Integration               |       
-| ----------------------------------- | 
-| ![Landing](./readme/int-live.gif) |
-
-### Live Conversation Demo
-| Live Chat with Slack              |       
-| ----------------------------------- | 
-| ![Landing](./readme/inbox-live.gif) |
-
 ### Live AI Assistant Demo
 | Live Chat with AI assistant              |       
 | ----------------------------------- | 
 | ![Landing](./readme/ai-live.gif) |
+
 <br><br>
 
 <!-- Development & Testing -->
