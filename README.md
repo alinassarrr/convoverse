@@ -94,10 +94,15 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 | ![Landing](./readme/demo/Channel.png)   | ![Landing](./readme/demo/Mail.png) |
 
 ### Conversation AI Assistant Screen                  
-
-| Summary Screen                       |  Actions Screen                      |
-| ------------------------------------ | ------------------------------------ |
-| <a href="./readme/Chat-Summary.png"><img src="./readme/Chat-Summary.png" width="250"/></a> | <a href="./readme/Chat-Actions.png"><img src="./readme/Chat-Actions.png" width="250"/></a> |
+<p align="center">
+  <a href="./readme/Chat-Summary.png">
+    <img src="./readme/Chat-Summary.png" width="250"/>
+  </a>
+  &nbsp;&nbsp;&nbsp; <!-- optional spacing between images -->
+  <a href="./readme/Chat-Actions.png">
+    <img src="./readme/Chat-Actions.png" width="250"/>
+  </a>
+</p>
 
 
 
