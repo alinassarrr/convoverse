@@ -95,8 +95,9 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 ### Conversation AI Assistant Screen                  
 | Summary Screen                       |  Actions Screen                      |
-| --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/Chat-Summary.png)| ![fsdaf](./readme/Chat-Actions.png) |
+| ------------------------------------ | ------------------------------------ |
+| <img src="./readme/Chat-Summary.png" width="300"/> | <img src="./readme/Chat-Actions.png" width="300"/> |
+
 
 
 ### Live AI Assistant Demo
