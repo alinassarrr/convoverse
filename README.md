@@ -6,7 +6,7 @@
 > **ConvoVerse** is an AI-powered solution that brings all your conversations in one place.
 It unifies your Slack messages and Gmail threads into a single, intelligent dashboard, so you never waste time jumping between apps.
 
-> 💡 The Problem  
+>  The Problem  
 Important conversations are scattered, tasks get buried, and deadlines slip through the cracks.
 
 > ✅ The Solution  
@@ -38,16 +38,16 @@ Important conversations are scattered, tasks get buried, and deadlines slip thro
 
 ## ConvoVerse Key Features  
 
-- 🌐 **One Hub for All Conversations**  
+-  **One Hub for All Conversations**  
 Bring Slack, Gmail, and more into a single hub. Connect your account with just one click and enjoy seamless, real-time syncing across all platforms.  
 
-- 🧾 **AI Side Assistant (Per Conversation)**  
+-  **AI Side Assistant (Per Conversation)**  
 Every conversation comes with its own AI-powered sidekick that summarizes what’s happening, highlights key points, and extracts tasks, events, and actions directly from the chat.  
 
-- 🧠 **Global AI Assistant – Your Second Brain**  
+-  **Global AI Assistant – Your Second Brain**  
 Go beyond single conversations. Ask the global assistant about tasks, deadlines, or decisions across *all* your platforms no matter where the conversation started.  
 
-- ⚡ **Real-Time Replying**  
+-  **Real-Time Replying**  
 Don’t just read, act. Reply to messages directly from ConvoVerse as if you were replying on Slack, Gmail, or any connected platform, making collaboration seamless and natural.  
 
 <img src="./readme/demo/features.png"/>
@@ -93,7 +93,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 ### Conversation AI Assistant Screen                  
 | Summary Screen                       |  Actions Screen                      |
 | --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/Chat-Summary.png) width="400"| ![fsdaf](./readme/Chat-Actions.png) |
+| ![Landing](./readme/Chat-Summary.png)| ![fsdaf](./readme/Chat-Actions.png) |
 
 
 ### Live AI Assistant Demo
@@ -106,7 +106,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- Development & Testing -->
 <img src="./readme/title6.svg"/>
 
-### Services, Validation and Testing
+### Services, Validation, and Testing
 
 |Testing                        |
 | ------------------------------------- |
@@ -132,7 +132,7 @@ one that keeps conversations summarized automatically, and another that answers 
 
 ---
 
-### 🤖 Agent 1: Conversation Summarization (Automatic)  
+### Agent 1: Conversation Summarization (Automatic)  
 
 This agent works in the background, making sure conversations never get out of hand.  
 
@@ -155,7 +155,7 @@ This agent works in the background, making sure conversations never get out of h
 
 ---
 
-### 💬 Agent 2: Query Response (On Demand)  
+### Agent 2: Query Response (On Demand)  
 
 This is the agent you talk to directly — your personal conversation assistant.  
 
@@ -175,7 +175,7 @@ This is the agent you talk to directly — your personal conversation assistant.
 
 ---
 
-### 🔑 Key Technical Features  
+### Key Technical Features  
 
 - **Vector Search & Embeddings** – Gemini embeddings + cosine similarity across messages, summaries, and actions  
 - **Smart Triggers** – Message count + time-based checks prevent missed updates  
@@ -184,7 +184,7 @@ This is the agent you talk to directly — your personal conversation assistant.
 
 ---
 
-### 🚀 Why It Matters  
+### Why It Matters  
 
 Together, these agents act as your **conversation brain**:  
 - Summaries + actions delivered automatically  
@@ -197,12 +197,12 @@ Together, these agents act as your **conversation brain**:
 ### Linear Workflow  
 To keep development structured and transparent, every feature and bug fix was tracked through **Linear** and linked directly with GitHub:  
 
-- 🔀 **Branching:** Each ticket started with a dedicated Git branch, keeping changes isolated and organized.  
-- 📝 **Commits:** Code was committed regularly with clear, descriptive messages referencing the Linear ticket.  
-- 📤 **Collaboration:** Changes were pushed to the remote repository, ensuring the team stayed in sync.  
-- 🔍 **Pull Requests:** A PR was opened for review, enabling feedback, discussion, and quality checks.  
-- 🔗 **Integration with Linear:** PRs were linked to their tickets, automatically updating progress and status.  
-- ✅ **Done:** Once merged, the ticket was moved to **“Done”**, completing the development cycle smoothly.  
+-  **Branching:** Each ticket started with a dedicated Git branch, keeping changes isolated and organized.  
+-  **Commits:** Code was committed regularly with clear, descriptive messages referencing the Linear ticket.  
+-  **Collaboration:** Changes were pushed to the remote repository, ensuring the team stayed in sync.  
+-  **Pull Requests:** A PR was opened for review, enabling feedback, discussion, and quality checks.  
+   **Integration with Linear:** PRs were linked to their tickets, automatically updating progress and status.  
+-  **Done:** Once merged, the ticket was moved to **“Done”**, completing the development cycle smoothly.  
 
 | Linear Workflow |
 | ------------------------------------- |
@@ -220,10 +220,10 @@ To keep development structured and transparent, every feature and bug fix was tr
 <a href="https://alinassarrr.github.io/convoverse/#/">Access the full API documentation here</a>  
 
 The Swagger UI provides an **interactive playground** for developers:  
-- 📖 Explore available endpoints with detailed descriptions.  
-- 🛠️ Test requests and view real-time responses directly in the browser.  
-- 🔑 Understand required parameters, authentication, and request/response formats.  
-- 🚀 Speeds up integration and ensures consistent use of APIs across the project.  
+-  Explore available endpoints with detailed descriptions.  
+-  Test requests and view real-time responses directly in the browser.  
+-  Understand required parameters, authentication, and request/response formats.  
+-  Speeds up integration and ensures consistent use of APIs across the project.  
 
 | GET Conversations API                 | POST Ask AI Assistant API             | GET Latest Summary API                |
 | --------------------------------------- | ------------------------------------- | ------------------------------------- |
