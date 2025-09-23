@@ -113,12 +113,11 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 |Testing                        |
 | ------------------------------------- |
-|![fsdaf](./readme/demo/test.png) |
+|<img src="./readme/demo/test.png" width="500"/> |
   
 | Services                            | Validation                       | 
 | --------------------------------------- | ------------------------------------- |
-| ![Landing](./readme/demo/service.png) | ![fsdaf](./readme/demo/validation.png) | 
-
+| <img src="./readme/demo/service.png" width="400"/> | <img src="./readme/demo/validation.png" width="400"/> |
 
 <br><br>
 
