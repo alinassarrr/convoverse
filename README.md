@@ -145,9 +145,6 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 <!-- AI Workflow -->
 ## 🧠 AI Workflow -> Two-Agent System  
 
-| AI Agents Workflow |
-| ------------------------------------- |
-|<img src="./readme/demo/ai-flow.png"/> |
 
 <br>
 ConvoVerse’s AI runs on two powerful agents:  
@@ -156,6 +153,9 @@ one that keeps conversations summarized automatically, and another that answers 
 ---
 
 ### Agent 1: Conversation Summarization (Automatic)  
+| AI Agent 1 Workflow |
+| ------------------------------------- |
+|<img src="./readme/demo/agent-1.png"/> |
 
 This agent works in the background, making sure conversations never get out of hand.  
 
@@ -179,6 +179,9 @@ This agent works in the background, making sure conversations never get out of h
 ---
 
 ### Agent 2: Query Response (On Demand)  
+| AI Agent 2 Workflow |
+| ------------------------------------- |
+|<img src="./readme/demo/agent-2.png"/> |
 
 This is the agent you talk to directly your personal conversation assistant.  
 
