@@ -224,7 +224,7 @@ To keep development structured and transparent, every feature and bug fix was tr
 -  **Commits:** Code was committed regularly with clear, descriptive messages referencing the Linear ticket.  
 -  **Collaboration:** Changes were pushed to the remote repository, ensuring the team stayed in sync.  
 -  **Pull Requests:** A PR was opened for review, enabling feedback, discussion, and quality checks.  
-   **Integration with Linear:** PRs were linked to their tickets, automatically updating progress and status.  
+-  **Integration with Linear:** PRs were linked to their tickets, automatically updating progress and status.  
 -  **Done:** Once merged, the ticket was moved to **“Done”**, completing the development cycle smoothly.  
 
 | Linear Workflow |
