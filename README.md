@@ -180,7 +180,7 @@ This agent works in the background, making sure conversations never get out of h
 
 ### Agent 2: Query Response (On Demand)  
 
-This is the agent you talk to directly — your personal conversation assistant.  
+This is the agent you talk to directly your personal conversation assistant.  
 
 **How it works:**  
 - **Trigger:** When you ask a question through the interface  
