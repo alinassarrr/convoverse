@@ -10,7 +10,7 @@ It unifies your Slack messages and Gmail threads into a single, intelligent dash
 Important conversations are scattered, tasks get buried, and deadlines slip through the cracks.
 
 > ✅ The Solution  
-**ConvoVerse** acts like your second brain. It automatically summarizes discussions, identifies action items, and surfaces the context you need keeping your team aligned, decisions faster, and critical information always visible.  
+**ConvoVerse** acts like your second brain. It automatically summarizes discussions, identifies action items, and surfaces the context you need, keeping your team aligned, making decisions faster, and ensuring critical information is always visible.  
 
 
 <br><br>
@@ -111,13 +111,10 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 ### Services, Validation, and Testing
 
-| Testing |
-| ------- |
-| <a href="./readme/demo/test.png"><img src="./readme/demo/test.png" width="300"/></a> |
-  
-| Services | Validation |
-| -------- | ---------- |
-| <a href="./readme/demo/service.png"><img src="./readme/demo/service.png" width="250"/></a> | <a href="./readme/demo/validation.png"><img src="./readme/demo/validation.png" width="250"/></a> |
+| Services | Validation | Testing |
+| -------- | ---------- | ------- |
+| <a href="./readme/demo/service.png"><img src="./readme/demo/service.png" width="250"/></a> | <a href="./readme/demo/validation.png"><img src="./readme/demo/validation.png" width="250"/></a> | <a href="./readme/demo/test.png"><img src="./readme/demo/test.png" width="250"/></a> |
+
 
 
 <!-- AI Workflow -->
