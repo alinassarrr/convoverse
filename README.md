@@ -111,15 +111,14 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 ### Services, Validation, and Testing
 
-|Testing                        |
-| ------------------------------------- |
-|<img src="./readme/demo/test.png" width="500"/> |
+| Testing |
+| ------- |
+| <a href="./readme/demo/test.png"><img src="./readme/demo/test.png" width="300"/></a> |
   
-| Services                            | Validation                       | 
-| --------------------------------------- | ------------------------------------- |
-| <img src="./readme/demo/service.png" width="400"/> | <img src="./readme/demo/validation.png" width="400"/> |
+| Services | Validation |
+| -------- | ---------- |
+| <a href="./readme/demo/service.png"><img src="./readme/demo/service.png" width="250"/></a> | <a href="./readme/demo/validation.png"><img src="./readme/demo/validation.png" width="250"/></a> |
 
-<br><br>
 
 <!-- AI Workflow -->
 ## 🧠 AI Workflow -> Two-Agent System  
