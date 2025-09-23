@@ -119,19 +119,25 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 ### Services, Validation, and Testing
 
-<p align="center">
-  <a href="./readme/demo/service.png">
-    <img src="./readme/demo/service.png" width="250"/>
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="./readme/demo/validation.png">
-    <img src="./readme/demo/validation.png" width="250"/>
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="./readme/demo/test.png">
-    <img src="./readme/demo/test.png" width="250"/>
-  </a>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="middle">
+      <a href="./readme/demo/service.png">
+        <img src="./readme/demo/service.png" width="250"/>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href="./readme/demo/validation.png">
+        <img src="./readme/demo/validation.png" width="250"/>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href="./readme/demo/test.png">
+        <img src="./readme/demo/test.png" width="250"/>
+      </a>
+    </td>
+  </tr>
+</table>
 
 
 
