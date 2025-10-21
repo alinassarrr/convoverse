@@ -256,3 +256,4 @@ The Swagger UI provides an **interactive playground** for developers:
 | ![Landing](./readme/demo/api2.png)       | ![fsdaf](./readme/demo/api3.png) | ![fsdaf](./readme/demo/api1.png)     |
 
 <br><br>
+© 2025 Ali Nassar. All rights reserved.
