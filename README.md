@@ -147,7 +147,7 @@ Don’t just read, act. Reply to messages directly from ConvoVerse as if you wer
 
 
 <br>
-ConvoVerse’s AI runs on two powerful agents:  
+ConvoVerse’s AI runs on two powerful agents using Gemini 2.0 as an LLM:  
 one that keeps conversations summarized automatically, and another that answers your questions across all platforms.  
 
 ---
